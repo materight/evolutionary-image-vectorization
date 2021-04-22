@@ -4,7 +4,7 @@ import cv2 as cv
 from .individual import Individual
 
 class Population():
-    def __init__(self, target, pop_size=10, n_poly=50, n_vertex=3, selection_cutoff=.10):
+    def __init__(self, target, pop_size=50, n_poly=50, n_vertex=3, selection_cutoff=.10):
         self.generation = 0
         self.selection_cutoff = selection_cutoff
         self.population = []

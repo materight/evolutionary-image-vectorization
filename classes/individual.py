@@ -1,44 +1,41 @@
+from classes.polygon import Polygon
 import numpy as np
 import cv2 as cv
+from PIL import Image, ImageDraw
+
+from .polygon import Polygon
+
+
 
 class Individual:
 
-    def __init__(self, target, n_poly, n_vertex, genes=None): 
+    def __init__(self, target, n_poly, n_vertex, polygons=None): 
         self.target = target
         self.n_poly = n_poly
         self.n_vertex = n_vertex
 
         # Init random individual
         self._fitness = None
-        if genes is None:
-            self.genes = np.random.rand(n_poly * (n_vertex * 2 + 3 + 1))
+        if polygons is None:
+            self.polygons = [Polygon(target, n_vertex) for i in range(n_poly)]
         else:
-            self.genes = genes
+            self.polygons = polygons
 
 
     def crossover(parent1, parent2):
-        offspring = np.zeros_like(parent1.genes)
         split_idx = np.random.randint(0, parent1.n_poly) * (parent1.n_vertex * 2 + 3 + 1)
-        for i, (g1, g2) in enumerate(zip(parent1.genes, parent2.genes)):
-            offspring[i] = g1 if i < split_idx else g2
-        return Individual(parent1.target, parent1.n_poly, parent1.n_vertex, offspring)
+        offspring_polygons = [poly1 if i < split_idx else poly2 for i, (poly1, poly2) in enumerate(zip(parent1.polygons, parent2.polygons))]
+        return Individual(parent1.target, parent1.n_poly, parent1.n_vertex, offspring_polygons)
         
 
-    def to_data(self):
-        polys = np.split(self.genes, self.n_poly)
-        polys = [np.split(poly, [-4, -1]) for poly in polys]
-        for i, poly in enumerate(polys):
-            polys[i][0] = (poly[0].reshape((self.n_vertex, 2)) * np.array([(self.target.shape[1] - 1), (self.target.shape[0] - 1)])).astype(int) # pts
-            polys[i][1] = (poly[1] * 255).astype(int) # color
-            polys[i][2] = (poly[2][0] * .05 + .3) # alpha between 0.05 and 0.3
-        return polys
-
     def draw(self):
-        canvas = np.zeros_like(self.target)
-        for pts, color, alpha in self.to_data():
-            mask = cv.fillPoly(np.zeros_like(canvas), [pts], (1, 1, 1))
-            canvas = np.where(mask > 0, color * alpha + canvas * (1 - alpha), canvas).astype(np.uint8)
+        canvas = Image.new('RGB', (self.target.shape[1], self.target.shape[0]), color='black')
+        draw = ImageDraw.Draw(canvas, 'RGBA')
+        for poly in self.polygons:
+            draw.polygon([tuple(p) for p in poly.pts], fill=(*poly.color, poly.alpha))
+        canvas = cv.cvtColor(np.array(canvas), cv.COLOR_RGB2BGR)
         return canvas
+
 
     def fitness(self):
         if self._fitness is None:
@@ -46,9 +43,9 @@ class Individual:
             self._fitness = np.sum((canvas - self.target)**2)
         return self._fitness
 
-    def mutate(self, mutation_chance=0.1):
-        for i, gene in enumerate(self.genes):
-            if np.random.rand() < mutation_chance:
-                self.genes[i] = max(0, min(1, self.genes[i] + np.random.normal(scale=0.1)))
+
+    def mutate(self, mutation_chance=0.01, mutation_factors=(5, 5, 1)):
+        for poly in self.polygons:
+            poly.mutate(mutation_chance, *mutation_factors)
         self._fitness = None
 
