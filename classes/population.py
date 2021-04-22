@@ -4,7 +4,7 @@ import cv2 as cv
 from .individual import Individual
 
 class Population():
-    def __init__(self, target, pop_size=50, n_poly=50, n_vertex=3, selection_cutoff=.10):
+    def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_cutoff=.1):
         self.generation = 0
         self.selection_cutoff = selection_cutoff
         self.population = []
@@ -13,14 +13,14 @@ class Population():
 
     def next(self):
         self.generation += 1
-        self.population.sort(key=lambda i: i.fitness())
+        self.population.sort(key=lambda i: i.fitness(), reverse=True)
 
         # Selection
-        selected = self.population[0:int(len(self.population) * self.selection_cutoff)]
+        selected = self.population[0:max(int(len(self.population) * self.selection_cutoff), 1)]
 
         # Crossover
         offspring = []
-        for i in range(len(self.population) - len(selected)):
+        for i in range(len(selected), len(self.population)):
             offspring.append(Individual.crossover(
                 np.random.choice(selected),
                 np.random.choice(selected)
@@ -32,5 +32,5 @@ class Population():
             i.mutate()
 
         # Return best individual
-        self.population.sort(key=lambda i: i.fitness())
+        self.population.sort(key=lambda i: i.fitness(), reverse=True)
         return self.generation, self.population[0]
