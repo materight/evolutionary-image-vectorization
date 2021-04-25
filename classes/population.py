@@ -1,3 +1,4 @@
+from os import replace
 import numpy as np
 import cv2 as cv
 
@@ -9,28 +10,27 @@ class Population():
         self.selection_cutoff = selection_cutoff
         self.population = []
         for i in range(pop_size):
-            self.population.append(Individual(target, n_poly, n_vertex))
+            self.population.append(Individual.random(target, n_poly, n_vertex))
+        self.population.sort(key=lambda i: i.fitness)
 
     def next(self):
         self.generation += 1
-        self.population.sort(key=lambda i: i.fitness(), reverse=True)
-
+        
         # Selection
-        selected = self.population[0:max(int(len(self.population) * self.selection_cutoff), 1)]
+        selected = self.population[0:max(int(len(self.population) * self.selection_cutoff), 2)]
 
         # Crossover
         offspring = []
-        for i in range(len(selected), len(self.population)):
-            offspring.append(Individual.crossover(
-                np.random.choice(selected),
-                np.random.choice(selected)
-            ))
-
+        for i in range(0, len(self.population)):
+            offspring.append(Individual.crossover(*np.random.choice(selected, size=2, replace=False)))
+        
         # Mutation
-        self.population = selected + offspring
-        for i in self.population:
-            i.mutate()
+        for ind in offspring:
+            ind.mutate()
+
+        self.population = offspring
+        # self.population = selected + offspring
 
         # Return best individual
-        self.population.sort(key=lambda i: i.fitness(), reverse=True)
+        self.population.sort(key=lambda i: i.fitness)
         return self.generation, self.population[0]
