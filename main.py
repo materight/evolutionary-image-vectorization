@@ -31,9 +31,10 @@ population = Population(img,
 )
 
 while True:
-    gen, best = population.next()
+    gen, best, others = population.next()
     print(f'{gen}) best: {best.fitness}, [{best.n_poly} poly]')
     
+    #cv.imshow('result', np.hstack([img, best.img, *[o.img for o in others]]))
     cv.imshow('result', np.hstack([img, best.img]))
 
     cv.waitKey(1)

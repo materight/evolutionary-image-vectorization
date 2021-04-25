@@ -36,7 +36,7 @@ class Individual:
         # Create new individual
         return Individual(parent1.target, offspring_polygons)
 
-    def mutate(self, mutation_chance=0.05, mutation_factors=(0.2, 0.2, 0.2)):
+    def mutate(self, mutation_chance=0.01, mutation_factors=(0.2, 0.2, 0.2)):
         # Muatate polygons
         for poly in self.polygons:
             poly.mutate(mutation_chance, *mutation_factors)
