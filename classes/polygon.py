@@ -13,6 +13,7 @@ class Polygon:
         self.color = color
         self.alpha = alpha
 
+
     def random(target, n_vertex):
         # Initialize the polygon's points randomly
         img_size = np.array(target.shape[:2][::-1])
