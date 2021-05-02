@@ -10,10 +10,10 @@ cv.namedWindow('result')
 # cv.setWindowProperty('result', cv.WND_PROP_TOPMOST, 1)
 
 # Load image
-img = Image.open('img/mona-lisa.jpg')
+img = Image.open('img/mona-lisa.png')
 img = np.array(img)
 img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-img = cv.resize(img, (0, 0), fx=.5, fy=.5)
+#img = cv.resize(img, (0, 0), fx=.5, fy=.5)
 print(f'Image size: {img.shape}')
 
 '''
@@ -25,10 +25,12 @@ img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
 # Genetic algorithm
 population = Population(
     img,
-    pop_size=50, 
-    n_poly=100, 
-    n_vertex=3, 
-    selection_cutoff=.1
+    pop_size=50,
+    n_poly=50,
+    n_vertex=3,
+    selection_cutoff=.1,
+    mutation_chance=0.01,
+    mutation_factors=(0.2, 0.2, 0.2)
 )
 
 while True:
@@ -37,6 +39,6 @@ while True:
     print(f'{gen}) {round((time.time() - start_time)*1000)}ms, best: {best.fitness}, ({best.n_poly} poly)')
     #cv.imshow('result', np.hstack([img, best.img, *[o.img for o in others]]))
     best_img = cv.resize(best.draw(), img.shape[1::-1])
-    cv.imshow('result', np.hstack([img, best_img]))
+    cv.imshow('Result', np.hstack([img, best_img]))
 
     cv.waitKey(1)

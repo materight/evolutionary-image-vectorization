@@ -15,12 +15,10 @@ class Individual:
         self.polygons = polygons
         self._fitness = None
 
-
-    def random(target, scale_factor, n_poly, n_vertex): 
+    def random(target, scale_factor, n_poly, n_vertex):
         # Init random individual
         polygons = [Polygon.random(target, n_vertex) for i in range(n_poly)]
         return Individual(target, scale_factor, polygons)
-
 
     def crossover(parent1, parent2):
         polygons1, polygons2 = [p.copy() for p in parent1.polygons], [p.copy() for p in parent2.polygons]
@@ -38,10 +36,11 @@ class Individual:
         # Create new individual
         return Individual(parent1.target, parent1.scale_factor, offspring_polygons)
 
-    def mutate(self, mutation_chance=0.01, mutation_factors=(0.2, 0.2, 0.2)):
+    def mutate(self, mutation_chance, mutation_factors):
         # Muatate polygons
         for poly in self.polygons:
             poly.mutate(mutation_chance, *mutation_factors)
+        '''
         # Randomly add a polygon. Maximum of 200 polygons.
         if self.n_poly < 200 and rand() < mutation_chance:
             self.polygons.insert(randint(0, self.n_poly), Polygon.random(self.target, self.polygons[0].n_vertex))
@@ -52,11 +51,12 @@ class Individual:
         if rand() < mutation_chance:
             i1, i2 = randint(0, self.n_poly, 2)
             self.polygons[i1], self.polygons[i2] = self.polygons[i2], self.polygons[i1]
+        '''
         # Reset fitness and image value
         self._fitness = None
 
     def draw(self, full_res=True):
-        scale = 1/self.scale_factor if full_res else 1 # Rescale internal image target to full scale
+        scale = 1/self.scale_factor if full_res else 1  # Rescale internal image target to full scale
         img = Image.new('RGB', (int(self.target.shape[1]*scale), int(self.target.shape[0]*scale)), color='black')
         draw = ImageDraw.Draw(img, 'RGBA')
         for poly in self.polygons:
@@ -75,5 +75,5 @@ class Individual:
     @property
     def fitness(self):
         if self._fitness is None:
-            self._fitness = np.sum((cv.absdiff(self.draw(full_res=False), self.target))**2)
+            self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.target)**2)
         return self._fitness
