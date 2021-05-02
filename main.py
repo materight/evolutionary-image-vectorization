@@ -15,25 +15,35 @@ cv.namedWindow('Result')
 img = Image.open('img/mona-lisa.jpg')
 img = np.array(img)
 img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-
-#img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-#img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-
 img = cv.resize(img, (0, 0), fx=.5, fy=.5)
 print(f'Image size: {img.shape}')
 
-'''
-gray_filtered = cv.bilateralFilter(img, 7, 50, 50)
-img = cv.Canny(gray_filtered, 80, 120)
-img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-'''
+cap = cv.VideoCapture(0)
 
+while True:
+    res, img = cap.read()
+    img = cv.resize(img, (0, 0), fx=.5, fy=.5)
+    gray_filtered = cv.bilateralFilter(img, 7, 50, 50)
+    img = cv.Canny(gray_filtered, 120, 140)
+    img = np.where(img > 0, 0, 255).astype(np.uint8)
+
+    field = cv.distanceTransform(img.copy(), cv.DIST_C, 3)
+    field = cv.normalize(field, None, 0, 255, cv.NORM_MINMAX).astype(np.uint8)
+    #img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+
+    cv.imshow('Result', np.hstack([img, field]))
+    cv.waitKey(1)
+
+plt.imshow(field, cmap='inferno')
+plt.show()
+
+'''
 # Genetic algorithm
 ea = EA(
     img,
     pop_size=50,
     n_poly=50,
-    n_vertex=4,
+    n_vertex=3,
     selection_cutoff=.1,
     mutation_chances=(0.01, 0.01, 0.01),
     mutation_factors=(0.2, 0.2, 0.2)
@@ -55,10 +65,11 @@ while True:
     if cv.waitKey(1) & 0xFF == ord('q'):
         break 
 
-
+cv.destroyAllWindows()
 x = range(len(hbest))
 plt.plot(x, hbest, c='r', label='best')
 #plt.plot(x, havg, c='g', label='avg')
 #plt.plot(x, hworst, c='k', label='worst')
 plt.legend()
 plt.show()
+'''
