@@ -3,6 +3,7 @@ import numpy as np
 from numpy.random import randint, rand, normal, choice
 import cv2 as cv
 from PIL import Image, ImageDraw
+import aggdraw
 from skimage import draw
 from .polygon import Polygon
 
@@ -58,7 +59,8 @@ class Individual:
     def draw(self, full_res=True):
         scale = 1/self.scale_factor if full_res else 1  # Rescale internal image target to full scale
         img = Image.new('RGB', (int(self.target.shape[1]*scale), int(self.target.shape[0]*scale)), color='black')
-        draw = ImageDraw.Draw(img, 'RGBA')
+        #draw = ImageDraw.Draw(img, 'RGBA')
+        draw = aggdraw.Draw('RGB', (320, 200), "white")
         for poly in self.polygons:
             if len(poly.pts) == 2:
                 draw.line([tuple(p) for p in np.floor(poly.pts*scale)], width=1)

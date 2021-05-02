@@ -4,7 +4,7 @@ from numpy.random import randint, rand, normal
 
 
 PTS_RADIUS = 0.5  # Maximm distance radius of generated points in first initialization.
-ALPHA_MIN, ALPHA_MAX = 20, 200
+ALPHA_MIN, ALPHA_MAX = 60, 180
 
 
 class Polygon:
@@ -22,7 +22,7 @@ class Polygon:
         pts = randint(low=pos-radius, high=pos+radius, size=(n_vertex, 2))  # Create
         pts = np.clip(pts, [0, 0], img_size)  # Clip points outside limits
         color = randint(0, 256, (3))  # RGB
-        alpha = int(rand()*rand()*150 + 55)  # Alpha channel
+        alpha = randint(ALPHA_MIN, ALPHA_MAX)  # Alpha channel
         return Polygon(img_size, pts, color, alpha)
 
     def mutate(self, chance, pts_factor, color_factor, alpha_factor):
