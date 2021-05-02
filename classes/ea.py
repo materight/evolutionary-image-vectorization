@@ -6,8 +6,8 @@ from numpy.random import randint, shuffle, choice
 from .individual import Individual
 
 
-class Population():
-    def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_cutoff=.1, mutation_chance=0.01, mutation_factors=(0.2, 0.2, 0.2), internal_res=75):
+class EA():
+    def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_cutoff=.1, mutation_chances=(0.01, 0.01, 0.01), mutation_factors=(0.2, 0.2, 0.2), internal_res=75):
         self.generation = 0
         self.scale_factor = internal_res / min(target.shape[:2])
         self.target = cv.resize(target, (0, 0), fx=self.scale_factor, fy=self.scale_factor)
@@ -15,7 +15,7 @@ class Population():
         self.n_poly = n_poly
         self.n_vertex = n_vertex
         self.selection_cutoff = selection_cutoff
-        self.mutation_chance = mutation_chance
+        self.mutation_chances = mutation_chances
         self.mutation_factors = mutation_factors
         self.population = []
         for i in range(pop_size):
@@ -25,17 +25,16 @@ class Population():
     def next(self):
         self.generation += 1
 
-        # Tournament selection
+        # Tournament selection. Note: the population is already sorted
         selection_count = max(int(len(self.population) * self.selection_cutoff), 2)
-        self.population.sort(key=lambda i: i.fitness)
         selected = self.population[0:selection_count]
-        # shuffle(self.population)
+        #shuffle(self.population)
         #selected = [min(self.population[group::selection_count], key=lambda i: i.fitness) for group in range(selection_count)]
 
         # Crossover
         offspring = []
         for i in range(0, len(self.population)):
-            # for i in range(len(selected), len(self.population)):
+        #for i in range(len(selected), len(self.population)):
             p1 = i % selection_count
             p2 = p1
             while p2 == p1:
@@ -45,11 +44,11 @@ class Population():
 
         # Mutation
         for ind in offspring:
-            ind.mutate(self.mutation_chance, self.mutation_factors)
+            ind.mutate(self.mutation_chances, self.mutation_factors)
 
         self.population = offspring
         #self.population = selected + offspring
 
         # Return best individual
-        best = min(self.population, key=lambda i: i.fitness)
-        return self.generation, best, selected
+        self.population.sort(key=lambda i: i.fitness)
+        return self.generation, self.population[0], self.population

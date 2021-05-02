@@ -1,10 +1,8 @@
 from classes.polygon import Polygon
 import numpy as np
-from numpy.random import randint, rand, normal, choice
+from numpy.random import randint, rand, normal, choice, shuffle
 import cv2 as cv
 from PIL import Image, ImageDraw
-import aggdraw
-from skimage import draw
 from .polygon import Polygon
 
 
@@ -33,34 +31,43 @@ class Individual:
         offspring_polygons = polygons1[:split_idx] + polygons2[split_idx:]
         '''
         # Uniform
-        offspring_polygons = [polygons1[i] if rand() < 0.5 else polygons2[i] for i in range(min(parent1.n_poly, parent2.n_poly))]
+        #offspring_polygons = [polygons1[i] if rand() < 0.5 else polygons2[i] for i in range(min(parent1.n_poly, parent2.n_poly))]
+        offspring_polygons = []
+        THRESH = 0.5 # parent1.fitness / (parent1.fitness + parent2.fitness) # Proportional to fitness
+        for i in range(min(parent1.n_poly, parent2.n_poly)):
+            pts, color, alpha = np.zeros_like(polygons1[i].pts), np.zeros_like(polygons1[i].color), None
+            for j in range(pts.shape[0]):
+                for k in range(pts.shape[1]):
+                    pts[j, k] = polygons1[i].pts[j, k] if rand() < THRESH else polygons2[i].pts[j, k]
+            for j in range(color.shape[0]):
+                color[j] = polygons1[i].color[j] if rand() < THRESH else polygons2[i].color[j]
+            alpha = polygons1[i].alpha if rand() < THRESH else polygons2[i].alpha
+            offspring_polygons.append(Polygon(polygons1[i].img_size.copy(), pts, color, alpha))
+
         # Create new individual
         return Individual(parent1.target, parent1.scale_factor, offspring_polygons)
 
-    def mutate(self, mutation_chance, mutation_factors):
+    def mutate(self, mutation_chances, mutation_factors):
         # Muatate polygons
         for poly in self.polygons:
-            poly.mutate(mutation_chance, *mutation_factors)
-        '''
+            poly.mutate(*mutation_chances, *mutation_factors)
         # Randomly add a polygon. Maximum of 200 polygons.
-        if self.n_poly < 200 and rand() < mutation_chance:
+        if self.n_poly < 200 and rand() < mutation_chances[0]:
             self.polygons.insert(randint(0, self.n_poly), Polygon.random(self.target, self.polygons[0].n_vertex))
         # Randomly remove a polygon. Minimum of 20 polygons
-        if self.n_poly > 20 and rand() < mutation_chance:
+        if self.n_poly > 20 and rand() < mutation_chances[0]:
             self.polygons.pop(randint(0, self.n_poly))
         # Randomly replace two polygons' positions
-        if rand() < mutation_chance:
+        if rand() < mutation_chances[0]:
             i1, i2 = randint(0, self.n_poly, 2)
             self.polygons[i1], self.polygons[i2] = self.polygons[i2], self.polygons[i1]
-        '''
         # Reset fitness and image value
         self._fitness = None
 
     def draw(self, full_res=True):
         scale = 1/self.scale_factor if full_res else 1  # Rescale internal image target to full scale
         img = Image.new('RGB', (int(self.target.shape[1]*scale), int(self.target.shape[0]*scale)), color='black')
-        #draw = ImageDraw.Draw(img, 'RGBA')
-        draw = aggdraw.Draw('RGB', (320, 200), "white")
+        draw = ImageDraw.Draw(img, 'RGBA')
         for poly in self.polygons:
             if len(poly.pts) == 2:
                 draw.line([tuple(p) for p in np.floor(poly.pts*scale)], width=1)
@@ -77,5 +84,5 @@ class Individual:
     @property
     def fitness(self):
         if self._fitness is None:
-            self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.target)**2)
+            self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.target).astype(np.int32)**2)
         return self._fitness

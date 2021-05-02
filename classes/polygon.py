@@ -3,8 +3,8 @@ from numpy import random
 from numpy.random import randint, rand, normal
 
 
-PTS_RADIUS = 0.5  # Maximm distance radius of generated points in first initialization.
-ALPHA_MIN, ALPHA_MAX = 60, 180
+PTS_RADIUS = 0.4  # Maximm distance radius of generated points in first initialization.
+ALPHA_MIN, ALPHA_MAX = 40, 200
 
 
 class Polygon:
@@ -25,24 +25,24 @@ class Polygon:
         alpha = randint(ALPHA_MIN, ALPHA_MAX)  # Alpha channel
         return Polygon(img_size, pts, color, alpha)
 
-    def mutate(self, chance, pts_factor, color_factor, alpha_factor):
+    def mutate(self, pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor):
         pts_factor = self.img_size.max() * pts_factor
         color_factor = 255 * color_factor
         alpha_factor = (ALPHA_MAX - ALPHA_MIN) * alpha_factor
         # Mutate points
         for i, pt in enumerate(self.pts):
             for j, x in enumerate(pt):
-                if rand() < chance:
-                    #self.pts[i, j] = int(np.clip(x + normal(scale=pts_factor), 0, self.img_size[j]))
+                if rand() < pts_chance:
+                    #self.pts[i, j] = int(np.clip(x + normal(scale=pts_factor//2), 0, self.img_size[j]))
                     self.pts[i, j] = int(np.clip(x + randint(-pts_factor//2, pts_factor//2), 0, self.img_size[j]))
         # Mutate color
         for i, c in enumerate(self.color):
-            if rand() < chance:
-                #self.color[i] = int(np.clip(c + normal(scale=color_factor), 0, 255))
+            if rand() < color_chance:
+                #self.color[i] = int(np.clip(c + normal(scale=color_factor//2), 0, 255))
                 self.color[i] = int(np.clip(c + randint(-color_factor//2, color_factor//2), 0, 255))
         # Mutate alpa
-        if rand() < chance:
-            #self.alpha = int(np.clip(self.alpha + normal(scale=alpha_factor), ALPHA_MIN, ALPHA_MAX))
+        if rand() < alpha_chance:
+            #self.alpha = int(np.clip(self.alpha + normal(scale=alpha_factor//2), ALPHA_MIN, ALPHA_MAX))
             self.alpha = int(np.clip(self.alpha + randint(-alpha_factor//2, alpha_factor//2), ALPHA_MIN, ALPHA_MAX))
 
     @property
