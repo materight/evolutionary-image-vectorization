@@ -12,12 +12,13 @@ cv.namedWindow('Result')
 # cv.setWindowProperty('Result', cv.WND_PROP_TOPMOST, 1)
 
 # Load image
-img = Image.open('img/mona-lisa.jpg')
+img = Image.open('img/bowie.jpg')
 img = np.array(img)
 img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-img = cv.resize(img, (0, 0), fx=.5, fy=.5)
+img = cv.resize(img, (0, 0), fx=.6, fy=.6)
 print(f'Image size: {img.shape}')
 
+'''
 cap = cv.VideoCapture(0)
 
 while True:
@@ -36,8 +37,11 @@ while True:
 
 plt.imshow(field, cmap='inferno')
 plt.show()
-
 '''
+
+cap = cv.VideoCapture(0)
+ret, img = cap.read()
+
 # Genetic algorithm
 ea = EA(
     img,
@@ -46,11 +50,18 @@ ea = EA(
     n_vertex=3,
     selection_cutoff=.1,
     mutation_chances=(0.01, 0.01, 0.01),
-    mutation_factors=(0.2, 0.2, 0.2)
+    mutation_factors=(0.2, 0.2, 0.2),
+    internal_resolution=75 # -1 to use original size
 )
 
 hbest, havg, hworst = [], [], []
+
+
 while True:
+    ret, img = cap.read()
+    img = cv.flip(img, 1)
+    ea.update_target(img)
+
     start_time = time.time()
     gen, best, population = ea.next()
     
@@ -72,4 +83,3 @@ plt.plot(x, hbest, c='r', label='best')
 #plt.plot(x, hworst, c='k', label='worst')
 plt.legend()
 plt.show()
-'''

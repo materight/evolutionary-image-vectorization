@@ -8,16 +8,15 @@ from .polygon import Polygon
 
 class Individual:
 
-    def __init__(self, target, scale_factor, polygons):
-        self.target = target
-        self.scale_factor = scale_factor
+    def __init__(self, problem, polygons):
+        self.problem = problem
         self.polygons = polygons
         self._fitness = None
 
-    def random(target, scale_factor, n_poly, n_vertex):
+    def random(problem, n_poly, n_vertex):
         # Init random individual
-        polygons = [Polygon.random(target, n_vertex) for i in range(n_poly)]
-        return Individual(target, scale_factor, polygons)
+        polygons = [Polygon.random(problem, n_vertex) for i in range(n_poly)]
+        return Individual(problem, polygons)
 
     def crossover(parent1, parent2):
         polygons1, polygons2 = [p.copy() for p in parent1.polygons], [p.copy() for p in parent2.polygons]
@@ -45,7 +44,7 @@ class Individual:
             offspring_polygons.append(Polygon(polygons1[i].img_size.copy(), pts, color, alpha))
 
         # Create new individual
-        return Individual(parent1.target, parent1.scale_factor, offspring_polygons)
+        return Individual(parent1.problem, offspring_polygons)
 
     def mutate(self, mutation_chances, mutation_factors):
         # Muatate polygons
@@ -53,7 +52,7 @@ class Individual:
             poly.mutate(*mutation_chances, *mutation_factors)
         # Randomly add a polygon. Maximum of 200 polygons.
         if self.n_poly < 200 and rand() < mutation_chances[0]:
-            self.polygons.insert(randint(0, self.n_poly), Polygon.random(self.target, self.polygons[0].n_vertex))
+            self.polygons.insert(randint(0, self.n_poly), Polygon.random(self.problem, self.polygons[0].n_vertex))
         # Randomly remove a polygon. Minimum of 20 polygons
         if self.n_poly > 20 and rand() < mutation_chances[0]:
             self.polygons.pop(randint(0, self.n_poly))
@@ -65,8 +64,8 @@ class Individual:
         self._fitness = None
 
     def draw(self, full_res=True):
-        scale = 1/self.scale_factor if full_res else 1  # Rescale internal image target to full scale
-        img = Image.new('RGB', (int(self.target.shape[1]*scale), int(self.target.shape[0]*scale)), color='black')
+        scale = 1/self.problem.scale_factor if full_res else 1  # Rescale internal image target to full scale
+        img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='black')
         draw = ImageDraw.Draw(img, 'RGBA')
         for poly in self.polygons:
             if len(poly.pts) == 2:
@@ -84,5 +83,5 @@ class Individual:
     @property
     def fitness(self):
         if self._fitness is None:
-            self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.target).astype(np.int32)**2)
+            self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.problem.target).astype(np.int32)**2)
         return self._fitness

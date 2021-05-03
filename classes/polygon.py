@@ -14,9 +14,9 @@ class Polygon:
         self.color = color
         self.alpha = alpha
 
-    def random(target, n_vertex):
+    def random(problem, n_vertex):
         # Initialize the polygon's points randomly
-        img_size = np.array(target.shape[:2][::-1])
+        img_size = np.array(problem.target.shape[:2][::-1])
         pos = randint(low=0, high=img_size, size=2)  # Generale position of the polygon, to which start creating points
         radius = (img_size * PTS_RADIUS).astype(np.int)
         pts = randint(low=pos-radius, high=pos+radius, size=(n_vertex, 2))  # Create
