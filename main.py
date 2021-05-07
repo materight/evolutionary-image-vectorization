@@ -31,18 +31,33 @@ ea = GA(
     internal_resolution=75 # -1 to use original size
 )
 
-hbest, havg, hworst = [], [], []
+# Particle swarm optimization
+pso = PSO(
+    img,
+    swarm_size=100,
+    internal_resolution=75 # -1 to use original size
+)
 
+hbest, havg, hworst = [], [], []
 while True:
     start_time = time.time()
+    
+    '''
     gen, best, population = ea.next()
     print(f'{gen}) {round((time.time() - start_time)*1000)}ms, best: {best.fitness}, ({best.n_poly} poly)')
     hbest.append(best.fitness)
     havg.append(np.average([ind.fitness for ind in population]))
     hworst.append(population[-1].fitness)
-    
+
     best_img = cv.resize(best.draw(), img.shape[1::-1])
     cv.imshow('Result', np.hstack([img, best_img]))
+    '''
+
+    iteration = pso.next()
+    print(f'{iteration})')
+    best_img = cv.resize(pso.draw(), img.shape[1::-1])
+    cv.imshow('Result', np.hstack([img, best_img]))
+    
     
     if cv.waitKey(1) & 0xFF == ord('q'):
         run = False

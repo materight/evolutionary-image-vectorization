@@ -1,8 +1,8 @@
-from .polygon import Polygon
 import numpy as np
 from numpy.random import randint, rand, normal, choice, shuffle
 import cv2 as cv
 from PIL import Image, ImageDraw
+
 from .polygon import Polygon
 
 
@@ -50,12 +50,6 @@ class Individual:
         # Muatate polygons
         for poly in self.polygons:
             poly.mutate(*mutation_chances, *mutation_factors)
-        # Randomly add a polygon. Maximum of 200 polygons.
-        if self.n_poly < 200 and rand() < mutation_chances[0]:
-            self.polygons.insert(randint(0, self.n_poly), Polygon.random(self.problem, self.polygons[0].n_vertex))
-        # Randomly remove a polygon. Minimum of 20 polygons
-        if self.n_poly > 20 and rand() < mutation_chances[0]:
-            self.polygons.pop(randint(0, self.n_poly))
         # Randomly replace two polygons' positions
         if rand() < mutation_chances[0]:
             i1, i2 = randint(0, self.n_poly, 2)
@@ -68,10 +62,7 @@ class Individual:
         img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='black')
         draw = ImageDraw.Draw(img, 'RGBA')
         for poly in self.polygons:
-            if len(poly.pts) == 2:
-                draw.line([tuple(p) for p in np.floor(poly.pts*scale)], width=1)
-            else:
-                draw.polygon([tuple(p) for p in np.floor(poly.pts*scale)], fill=(*poly.color, poly.alpha))
+            draw.polygon([tuple(p) for p in np.floor(poly.pts*scale)], fill=(*poly.color, poly.alpha))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img

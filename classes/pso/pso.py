@@ -1,22 +1,38 @@
-
 import numpy as np
 import cv2 as cv
-from numpy.random import randint, shuffle, choice
+from PIL import Image, ImageDraw
 
 from ..problem import Problem
-# from .particle import Particle
+from .particle import Particle
 
 class PSO:
-   def __init__(self, target, pop_size=50, mutation_chances=(0.01, 0.01, 0.01), mutation_factors=(0.2, 0.2, 0.2), internal_resolution=75):
-        self.generation = 0
+    def __init__(self, target, swarm_size=50, internal_resolution=75):
+        self.iteration = 0
         self.problem = Problem(Problem.PSO, target, internal_resolution)
-        self.mutation_chances = mutation_chances
-        self.mutation_factors = mutation_factors
-        self.population = []
-        for i in range(pop_size):
-            pass
-            #self.population.append(Particle.random(self.problem, 1, 2))
-        self.population.sort(key=lambda i: i.fitness)
-        
+        self.swarm = []
+        for i in range(swarm_size):
+            self.swarm.append(Particle.random(self.problem))
+        self.swarm.sort(key=lambda i: i.fitness)
+
+    def next(self):
+        self.iteration += 1
+
+        for particle in self.swarm:
+            particle.move(self.swarm)
+
+        return self.iteration
+
+    def draw(self):
+        scale = 1/self.problem.scale_factor  # Rescale internal image target to full scale
+        img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='black')
+        draw = ImageDraw.Draw(img, 'RGB')
+        for particle in self.swarm:
+            draw.line(tuple(particle.line.coords*scale), fill=(255,255,255), width=int(2*scale))
+        img = np.array(img)
+        img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
+        return img
+
+    def update_target(self, target):
+        self.problem.set_target(target)
     
 
