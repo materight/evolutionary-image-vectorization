@@ -1,4 +1,4 @@
-from classes.polygon import Polygon
+from .polygon import Polygon
 import numpy as np
 from numpy.random import randint, rand, normal, choice, shuffle
 import cv2 as cv
