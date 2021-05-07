@@ -27,15 +27,13 @@ ea = GA(
     n_vertex=3,
     selection_cutoff=.1,
     mutation_chances=(0.01, 0.01, 0.01),
-    mutation_factors=(0.2, 0.2, 0.2),
-    internal_resolution=75 # -1 to use original size
+    mutation_factors=(0.2, 0.2, 0.2)
 )
 
 # Particle swarm optimization
 pso = PSO(
     img,
-    swarm_size=100,
-    internal_resolution=75 # -1 to use original size
+    swarm_size=200
 )
 
 hbest, havg, hworst = [], [], []

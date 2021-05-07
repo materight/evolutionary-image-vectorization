@@ -6,7 +6,7 @@ from ..problem import Problem
 from .particle import Particle
 
 class PSO:
-    def __init__(self, target, swarm_size=50, internal_resolution=75):
+    def __init__(self, target, swarm_size=50, internal_resolution=-1):
         self.iteration = 0
         self.problem = Problem(Problem.PSO, target, internal_resolution)
         self.swarm = []
@@ -24,10 +24,10 @@ class PSO:
 
     def draw(self):
         scale = 1/self.problem.scale_factor  # Rescale internal image target to full scale
-        img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='black')
+        img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='white')
         draw = ImageDraw.Draw(img, 'RGB')
         for particle in self.swarm:
-            draw.line(tuple(particle.line.coords*scale), fill=(255,255,255), width=int(2*scale))
+            draw.line(tuple(particle.line.coords*scale), fill=(0,0,0), width=int(2*scale))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img

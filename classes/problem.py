@@ -15,8 +15,10 @@ class Problem:
             self.target = cv.resize(target, (0, 0), fx=self.scale_factor, fy=self.scale_factor)
         elif self.problem_type == self.PSO:
             gray_filtered = cv.bilateralFilter(target, 7, 50, 50)
-            self.target = cv.Canny(gray_filtered, 120, 140)
+            self.target = cv.Canny(gray_filtered, 140, 180)
             self.target = np.where(self.target > 0, 0, 255).astype(np.uint8)
             self.target = cv.distanceTransform(self.target, cv.DIST_C, 3)
-            self.target = cv.normalize(self.target, None, 0, 255, cv.NORM_MINMAX).astype(np.uint8)
+            self.target = cv.normalize(self.target, None, 0, 255, cv.NORM_MINMAX)
+
+            
         
