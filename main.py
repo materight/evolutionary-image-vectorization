@@ -33,16 +33,24 @@ ea = GA(
 # Particle swarm optimization
 pso = PSO(
     img,
-    swarm_size=200
+    swarm_size=200,
+    neighborhood_size=3,
+    coeffs = (0.5, 4.1, 0.1), # Inertia, cognitive coeff, social coeff
+    min_distance=3
 )
+
+
 
 hbest, havg, hworst = [], [], []
 while True:
     start_time = time.time()
     
+    
     '''
     gen, best, population = ea.next()
-    print(f'{gen}) {round((time.time() - start_time)*1000)}ms, best: {best.fitness}, ({best.n_poly} poly)')
+    
+    tot_time = round((time.time() - start_time)*1000)
+    print(f'{gen}) {tot_time}ms, best: {best.fitness}, ({best.n_poly} poly)')
     hbest.append(best.fitness)
     havg.append(np.average([ind.fitness for ind in population]))
     hworst.append(population[-1].fitness)
@@ -52,16 +60,25 @@ while True:
     '''
 
     iteration = pso.next()
-    print(f'{iteration})')
+
+    tot_time = round((time.time() - start_time)*1000)
+    print(f'{iteration}) {tot_time}ms')
+    target_img = cv.cvtColor(pso.problem.target.astype(np.uint8), cv.COLOR_GRAY2BGR)
+    
     best_img = cv.resize(pso.draw(), img.shape[1::-1])
-    cv.imshow('Result', np.hstack([img, best_img]))
+    
+    best_img = np.where(best_img == 0, 255, 0).astype(np.uint8) # Invert colors
+    best_img[:,:,:2] = 0
+    target_img = np.where(best_img[:,:] == [0,0,255], [0,0,255], target_img[:,:]).astype(np.uint8)
+
+    cv.imshow('Result', np.hstack([img, target_img, best_img]))
     
     
     if cv.waitKey(1) & 0xFF == ord('q'):
-        run = False
         break 
     
     #ea.update_target(img)
+    #pso.update_target(img)
 
 cv.destroyAllWindows()
 x = range(len(hbest))
