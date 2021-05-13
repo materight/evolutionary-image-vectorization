@@ -22,5 +22,6 @@ class Problem:
             self.target = np.where(self.target > 0, 0, 255).astype(np.uint8)
             # Compute distance-based fitness landscape
             self.target = cv.distanceTransform(self.target, cv.DIST_C, 3)
+            #self.target = np.log(self.target+1)
             self.target = cv.normalize(self.target, None, 0, 255, cv.NORM_MINMAX)
         

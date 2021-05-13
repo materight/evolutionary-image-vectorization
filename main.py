@@ -24,7 +24,7 @@ ea = GA(
     img,
     pop_size=50,
     n_poly=50,
-    n_vertex=2,
+    n_vertex=3,
     selection_cutoff=.1,
     mutation_chances=(0.01, 0.01, 0.01),
     mutation_factors=(0.2, 0.2, 0.2)
@@ -33,7 +33,7 @@ ea = GA(
 # Particle swarm optimization
 pso = PSO(
     img,
-    swarm_size=200,
+    swarm_size=300,
     neighborhood_size=3,
     coeffs = (0.5, 4.1, 0.1), # Inertia, cognitive coeff, social coeff
     min_distance=0
@@ -45,6 +45,7 @@ hbest, havg, hworst = [], [], []
 while True:
     start_time = time.time()
     
+    '''
     gen, best, population = ea.next()
     
     tot_time = round((time.time() - start_time)*1000)
@@ -56,8 +57,8 @@ while True:
     best_img = cv.resize(best.draw(), img.shape[1::-1])
     cv.imshow('Result', np.hstack([img, best_img]))
     
-
     '''
+
     iteration = pso.next()
 
     tot_time = round((time.time() - start_time)*1000)
@@ -70,12 +71,10 @@ while True:
     
     # best_img = np.where(best_img == 0, 255, 0).astype(np.uint8) # Invert colors
     target_img = np.where(best_img[:,:] == [255,255,255], [0,0,255], target_img[:,:]).astype(np.uint8)
-    #plt.imshow(pso.problem.target, norm=mplc.LogNorm())
-    #plt.show()
     cv.imshow('Result', np.hstack([img, target_img, best_img]))
-    '''
     
-    if cv.waitKey(0) & 0xFF == ord('q'):
+    
+    if cv.waitKey(1) & 0xFF == ord('q'):
         break 
     
     #ea.update_target(img)

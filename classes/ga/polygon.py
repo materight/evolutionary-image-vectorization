@@ -4,7 +4,7 @@ from numpy.random import randint, rand, normal
 
 
 PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
-LINE_PTS_RADIUS = 15
+LINE_PTS_RADIUS = 20
 ALPHA_MIN, ALPHA_MAX = 40, 200
 
 
@@ -40,10 +40,12 @@ class Polygon:
         if self.pts.shape[0] == 2:
             # Recompute center point and rotation angle
             center = self.pts.mean(axis=0)
-            theta = np.arccos((center[0] - self.pts[0, 0]) / LINE_PTS_RADIUS)
+            theta = np.arctan((center[1] - self.pts[0, 1]) / (center[0] - self.pts[0, 0]))
             # Mutate center and rotation
-            center = np.clip(center + normal(scale=pts_factor//4, size=2), 0, self.img_size)
-            theta = theta + normal(scale=1)
+            if rand() < pts_chance:
+                center = np.clip(center + normal(scale=pts_factor//4), 0, self.img_size)
+            if rand() < pts_chance:
+                theta = theta + normal(scale=np.pi/4)
             # Compute new point coordinates
             d = [LINE_PTS_RADIUS * np.cos(theta), LINE_PTS_RADIUS * np.sin(theta)]
             self.pts = np.array([center-d, center+d])

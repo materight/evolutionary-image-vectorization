@@ -79,8 +79,8 @@ class Individual:
     def fitness(self):
         if self._fitness is None:
             if self.problem.problem_type == Problem.RGB:
-                self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.problem.target).astype(np.int32)**2)
+                self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.problem.target).astype(np.int)**2)
             else:
                 image = cv.cvtColor(self.draw(full_res=False), cv.COLOR_BGR2GRAY) 
-                self._fitness = np.sum(self.problem.target[image == 255].astype(np.int32)**2)
+                self._fitness = np.sum(self.problem.target[image > 0].astype(np.int)**2)
         return self._fitness
