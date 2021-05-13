@@ -12,9 +12,7 @@ from classes.pso.pso import PSO
 cv.namedWindow('Result')
 
 # Load image
-img = Image.open('img/mona_lisa.jpg')
-img = np.array(img)
-img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
+img = cv.cvtColor(np.array(Image.open('img/mona_lisa.jpg')), cv.COLOR_RGB2BGR)
 img = cv.resize(img, (0, 0), fx=.6, fy=.6)
 print(f'Image size: {img.shape}')
 
