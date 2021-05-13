@@ -21,9 +21,10 @@ class Particle:
 
     def move(self, i, swarm, neighborhood_size, coeffs, min_distance):
         # Compute neighbor particles
-        swarm.sort(key=lambda p: p.line.dist(self.line)) # TODO: optimize neighborhood computation
-        neighborhood = swarm[:neighborhood_size]
-        #neighborhood = np.take(swarm, range(i+1,i+1+neighborhood_size), mode='wrap').tolist() # Take 5 next particles
+        #swarm.sort(key=lambda p: p.line.dist(self.line)) # TODO: optimize neighborhood computation
+        #neighborhood = swarm[:neighborhood_size]
+        neighborhood_idx =  np.concatenate((np.arange(i-neighborhood_size//2,i), np.arange(i+1,i+neighborhood_size//2+1)))
+        neighborhood = np.take(swarm, neighborhood_idx, mode='wrap').tolist() # Take near particles #range(i+1,i+1+neighborhood_size)
         nhood_best = min(neighborhood, key=lambda p: p.fitness).line
         # Update velocity
         w, phi1, phi2 = coeffs # Inertia, cognitive coeff, social coeff

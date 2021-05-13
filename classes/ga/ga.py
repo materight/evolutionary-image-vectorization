@@ -9,7 +9,7 @@ from .individual import Individual
 class GA:
     def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_cutoff=.1, mutation_chances=(0.01, 0.01, 0.01), mutation_factors=(0.2, 0.2, 0.2), internal_resolution=75):
         self.generation = 0
-        self.problem = Problem(Problem.EA, target, internal_resolution)
+        self.problem = Problem(Problem.RGB if n_vertex > 2 else Problem.EDGES, target, internal_resolution)
         self.n_poly = n_poly
         self.n_vertex = n_vertex
         self.selection_cutoff = selection_cutoff

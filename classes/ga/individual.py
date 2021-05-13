@@ -3,6 +3,7 @@ from numpy.random import randint, rand, normal, choice, shuffle
 import cv2 as cv
 from PIL import Image, ImageDraw
 
+from ..problem import Problem
 from .polygon import Polygon
 
 
@@ -62,7 +63,10 @@ class Individual:
         img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='black')
         draw = ImageDraw.Draw(img, 'RGBA')
         for poly in self.polygons:
-            draw.polygon([tuple(p) for p in np.floor(poly.pts*scale)], fill=(*poly.color, poly.alpha))
+            if poly.pts.shape[0] == 2:
+                draw.line([tuple(p) for p in np.floor(poly.pts*scale)], fill=(255, 255, 255), width=int(scale))
+            else:
+                draw.polygon([tuple(p) for p in np.floor(poly.pts*scale)], fill=(*poly.color, poly.alpha))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img
@@ -74,5 +78,9 @@ class Individual:
     @property
     def fitness(self):
         if self._fitness is None:
-            self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.problem.target).astype(np.int32)**2)
+            if self.problem.problem_type == Problem.RGB:
+                self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.problem.target).astype(np.int32)**2)
+            else:
+                image = cv.cvtColor(self.draw(full_res=False), cv.COLOR_BGR2GRAY) 
+                self._fitness = np.sum(self.problem.target[image == 255].astype(np.int32)**2)
         return self._fitness

@@ -1,5 +1,4 @@
 import numpy as np
-import math
 from numpy.random import randint, rand, normal, choice, shuffle
 
 LENGTH = 15
@@ -12,8 +11,8 @@ class Line:
     def random(problem):
         img_size = np.array(problem.target.shape[:2][::-1])
         center = randint(low=LENGTH//2, high=img_size-LENGTH//2, size=2)
-        rotation = rand()*2*math.pi # Rotation radians
-        return Line(img_size, np.array([*center, rotation], dtype=np.float64))
+        theta = rand()*2*np.pi # Rotation angle in radians
+        return Line(img_size, np.array([*center, theta], dtype=np.float64))
 
     def diff(self, line):
         return self.x - line.x
@@ -24,7 +23,7 @@ class Line:
     def update(self, velocity):
         self.x += velocity
         # Clip position if outside image borders
-        self.x[:2] = np.clip(self.x[:2], LENGTH//2, self.img_size-LENGTH//2) 
+        self.x[:2] = np.clip(self.x[:2], LENGTH//2 + 1, self.img_size - LENGTH//2 - 1) 
 
     @property
     def center(self):
@@ -37,7 +36,7 @@ class Line:
     @property
     def coords(self):
         r = LENGTH / 2
-        d = [r * math.cos(self.rotation), r * math.sin(self.rotation)] # Compute displacement of line ends from line center
+        d = [r * np.cos(self.rotation), r * np.sin(self.rotation)] # Compute displacement of line ends from line center
         return np.concatenate([self.center + d, self.center - d]) 
 
     @property

@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy as np
 import cv2 as cv
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, matplotlib.colors as mplc
 import time
 
 
@@ -24,7 +24,7 @@ ea = GA(
     img,
     pop_size=50,
     n_poly=50,
-    n_vertex=3,
+    n_vertex=2,
     selection_cutoff=.1,
     mutation_chances=(0.01, 0.01, 0.01),
     mutation_factors=(0.2, 0.2, 0.2)
@@ -36,7 +36,7 @@ pso = PSO(
     swarm_size=200,
     neighborhood_size=3,
     coeffs = (0.5, 4.1, 0.1), # Inertia, cognitive coeff, social coeff
-    min_distance=3
+    min_distance=0
 )
 
 
@@ -45,8 +45,6 @@ hbest, havg, hworst = [], [], []
 while True:
     start_time = time.time()
     
-    
-    '''
     gen, best, population = ea.next()
     
     tot_time = round((time.time() - start_time)*1000)
@@ -57,24 +55,27 @@ while True:
 
     best_img = cv.resize(best.draw(), img.shape[1::-1])
     cv.imshow('Result', np.hstack([img, best_img]))
-    '''
+    
 
+    '''
     iteration = pso.next()
 
     tot_time = round((time.time() - start_time)*1000)
     print(f'{iteration}) {tot_time}ms')
-    target_img = cv.cvtColor(pso.problem.target.astype(np.uint8), cv.COLOR_GRAY2BGR)
+    target_img = np.log(pso.problem.target+1)
+    target_img = cv.normalize(target_img, None, 0, 255, norm_type=cv.NORM_MINMAX)
+    target_img = cv.cvtColor(target_img.astype(np.uint8), cv.COLOR_GRAY2BGR)
     
     best_img = cv.resize(pso.draw(), img.shape[1::-1])
     
-    best_img = np.where(best_img == 0, 255, 0).astype(np.uint8) # Invert colors
-    best_img[:,:,:2] = 0
-    target_img = np.where(best_img[:,:] == [0,0,255], [0,0,255], target_img[:,:]).astype(np.uint8)
-
+    # best_img = np.where(best_img == 0, 255, 0).astype(np.uint8) # Invert colors
+    target_img = np.where(best_img[:,:] == [255,255,255], [0,0,255], target_img[:,:]).astype(np.uint8)
+    #plt.imshow(pso.problem.target, norm=mplc.LogNorm())
+    #plt.show()
     cv.imshow('Result', np.hstack([img, target_img, best_img]))
+    '''
     
-    
-    if cv.waitKey(1) & 0xFF == ord('q'):
+    if cv.waitKey(0) & 0xFF == ord('q'):
         break 
     
     #ea.update_target(img)
