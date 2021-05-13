@@ -24,12 +24,12 @@ class Particle:
         #swarm.sort(key=lambda p: p.line.dist(self.line)) # TODO: optimize neighborhood computation
         #neighborhood = swarm[:neighborhood_size]
 
-        neighborhood_idx = np.concatenate((np.arange(i-neighborhood_size//2,i), np.arange(i+1,i+neighborhood_size//2+1))) # Ring topology
+        #neighborhood_idx = np.arange(i-neighborhood_size//2, i+neighborhood_size//2+1)) # Ring topology
         
-        #neighborhood_start = (i//neighborhood_size)*neighborhood_size # Star topolgy
-        #neighborhood_idx = np.arange(neighborhood_start, neighborhood_start+neighborhood_size)
+        neighborhood_start = (i//neighborhood_size)*neighborhood_size # Star topolgy
+        neighborhood_idx = np.arange(neighborhood_start, neighborhood_start+neighborhood_size)
 
-        neighborhood = np.take(swarm, neighborhood_idx, mode='wrap').tolist() # Take near particles #range(i+1,i+1+neighborhood_size)
+        neighborhood = np.take(swarm, neighborhood_idx[neighborhood_idx != i], mode='wrap').tolist() # Take near particles #range(i+1,i+1+neighborhood_size)
 
         nhood_best = min(neighborhood, key=lambda p: p.fitness).line
         # Update velocity

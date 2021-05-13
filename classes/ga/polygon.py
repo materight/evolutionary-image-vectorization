@@ -4,7 +4,7 @@ from numpy.random import randint, rand, normal
 
 
 PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
-LINE_PTS_RADIUS = 20
+LINE_LENGTH = 20
 ALPHA_MIN, ALPHA_MAX = 40, 200
 
 
@@ -22,7 +22,7 @@ class Polygon:
         if n_vertex == 2:
             # Create a line with random angle and center on pos
             theta = rand() * 2 * np.pi
-            d = [LINE_PTS_RADIUS * np.cos(theta), LINE_PTS_RADIUS * np.sin(theta)]
+            d = [LINE_LENGTH * np.cos(theta), LINE_LENGTH * np.sin(theta)]
             pts = np.array([pos-d, pos+d])
         else:
             # Random points inside the radius defined
@@ -47,7 +47,7 @@ class Polygon:
             if rand() < pts_chance:
                 theta = theta + normal(scale=np.pi/4)
             # Compute new point coordinates
-            d = [LINE_PTS_RADIUS * np.cos(theta), LINE_PTS_RADIUS * np.sin(theta)]
+            d = [LINE_LENGTH * np.cos(theta), LINE_LENGTH * np.sin(theta)]
             self.pts = np.array([center-d, center+d])
         else:
             # Mutate points

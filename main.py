@@ -12,7 +12,7 @@ from classes.pso.pso import PSO
 cv.namedWindow('Result')
 
 # Load image
-img = Image.open('img/mona-lisa.jpg')
+img = Image.open('img/mona_lisa.jpg')
 img = np.array(img)
 img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
 img = cv.resize(img, (0, 0), fx=.6, fy=.6)
@@ -34,11 +34,10 @@ ea = GA(
 pso = PSO(
     img,
     swarm_size=300,
-    neighborhood_size=3,
+    neighborhood_size=5,
     coeffs = (0.5, 4.1, 0.1), # Inertia, cognitive coeff, social coeff
     min_distance=0
 )
-
 
 
 hbest, havg, hworst = [], [], []
@@ -49,7 +48,7 @@ while True:
     gen, best, population = ea.next()
     
     tot_time = round((time.time() - start_time)*1000)
-    print(f'{gen}) {tot_time}ms, best: {best.fitness}, ({best.n_poly} poly)')
+    print(f'{gen}) {tot_time}ms, best: {best.fitness}')
     hbest.append(best.fitness)
     havg.append(np.average([ind.fitness for ind in population]))
     hworst.append(population[-1].fitness)
