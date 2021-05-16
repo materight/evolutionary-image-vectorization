@@ -25,7 +25,9 @@ class GA:
 
         # Tournament selection. Note: the population is already sorted
         selection_count = max(int(len(self.population) * self.selection_cutoff), 2)
+        
         selected = self.population[0:selection_count]
+        
         #shuffle(self.population)
         #selected = [min(self.population[group::selection_count], key=lambda i: i.fitness) for group in range(selection_count)]
 
@@ -49,7 +51,11 @@ class GA:
 
         # Return best individual
         self.population.sort(key=lambda i: i.fitness)
-        return self.generation, self.population[0], self.population
+        best = self.population[0]
+
+        #best = min(self.population, key=lambda p: p.fitness)
+        
+        return self.generation, best, self.population
 
 
     def update_target(self, target):
