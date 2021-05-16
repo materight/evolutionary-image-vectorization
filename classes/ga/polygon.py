@@ -1,7 +1,9 @@
 import numpy as np
 from numpy import random
-from numpy.random import randint, rand, normal
+from numpy.random import randint, rand
+from numba import njit
 
+from ..utils import clip, normal
 
 PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
 LINE_LENGTH = 20
@@ -34,37 +36,43 @@ class Polygon:
         return Polygon(img_size, pts, color, alpha)
 
     def mutate(self, pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor):
-        pts_factor = self.img_size.max() * pts_factor
+        self.pts, self.color, self.alpha = Polygon._mutate(self.img_size, self.pts, self.color, self.alpha ,pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor)
+
+    @njit
+    def _mutate(img_size, pts, color, alpha, pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor):
+        pts_factor = img_size.max() * pts_factor
         color_factor = 255 * color_factor
         alpha_factor = (ALPHA_MAX - ALPHA_MIN) * alpha_factor
-        if self.pts.shape[0] == 2:
+        if pts.shape[0] == 2:
             # Recompute center point and rotation angle
-            center = self.pts.mean(axis=0)
-            theta = np.arctan((center[1] - self.pts[0, 1]) / (center[0] - self.pts[0, 0]))
+            center = np.array([pts[:, i].mean() for i in range(pts.shape[1])])
+            theta = np.arctan((center[1] - pts[0, 1]) / (center[0] - pts[0, 0]))
             # Mutate center and rotation
             if rand() < pts_chance:
-                center = np.clip(center + normal(scale=pts_factor//4), 0, self.img_size)
+                center = center + normal(scale=pts_factor//4)
+                center[0], center[1] = clip(center[0], 0, img_size[0]), clip(center[1], 0, img_size[1])
             if rand() < pts_chance:
                 theta = theta + normal(scale=np.pi/4)
             # Compute new point coordinates
-            d = [LINE_LENGTH * np.cos(theta), LINE_LENGTH * np.sin(theta)]
-            self.pts = np.array([center-d, center+d])
+            d = np.array([LINE_LENGTH * np.cos(theta), LINE_LENGTH * np.sin(theta)])
+            pts[0], pts[1] = center-d, center+d
         else:
             # Mutate points
-            for i, pt in enumerate(self.pts):
+            for i, pt in enumerate(pts):
                 for j, x in enumerate(pt):
                     if rand() < pts_chance:
-                        self.pts[i, j] = int(np.clip(x + normal(scale=pts_factor//4), 0, self.img_size[j]))
-                        #self.pts[i, j] = int(np.clip(x + randint(-pts_factor//2, pts_factor//2), 0, self.img_size[j]))
+                        pts[i, j] = int(clip(x + normal(scale=pts_factor//4), 0, img_size[j]))
+                        #pts[i, j] = int(x + randint(-pts_factor//2, pts_factor//2))
             # Mutate color
-            for i, c in enumerate(self.color):
+            for i, c in enumerate(color):
                 if rand() < color_chance:
-                    self.color[i] = int(np.clip(c + normal(scale=color_factor//4), 0, 255))
-                    #self.color[i] = int(np.clip(c + randint(-color_factor//2, color_factor//2), 0, 255))
+                    color[i] = int(clip(c + normal(scale=color_factor//4), 0, 255))
+                    #color[i] = int(clip(c + randint(-color_factor//2, color_factor//2)))
             # Mutate alpa
             if rand() < alpha_chance:
-                self.alpha = int(np.clip(self.alpha + normal(scale=alpha_factor//4), ALPHA_MIN, ALPHA_MAX))
-                #self.alpha = int(np.clip(self.alpha + randint(-alpha_factor//2, alpha_factor//2), ALPHA_MIN, ALPHA_MAX))
+                alpha = int(clip(alpha + normal(scale=alpha_factor//4), ALPHA_MIN, ALPHA_MAX))
+                #alpha = int(clip(alpha + randint(-alpha_factor//2, alpha_factor//2)))
+        return pts, color, alpha
 
     @property
     def n_vertex(self):

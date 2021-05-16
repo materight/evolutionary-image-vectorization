@@ -21,13 +21,8 @@ class Individual:
 
     def crossover(parent1, parent2):
         polygons1, polygons2 = [p.copy() for p in parent1.polygons], [p.copy() for p in parent2.polygons]
-        '''
-        # One parent
-        offspring_polygons = polygons1 if rand() < 0.5 else polygons2
-        '''
-        '''
         # One-point split
-        split_idx = np.random.randint(0, max(parent1.n_poly, parent2.n_poly))
+        split_idx = randint(0, max(parent1.n_poly, parent2.n_poly))
         offspring_polygons = polygons1[:split_idx] + polygons2[split_idx:]
         '''
         # Uniform
@@ -43,7 +38,7 @@ class Individual:
                 color[j] = polygons1[i].color[j] if rand() < THRESH else polygons2[i].color[j]
             alpha = polygons1[i].alpha if rand() < THRESH else polygons2[i].alpha
             offspring_polygons.append(Polygon(polygons1[i].img_size.copy(), pts, color, alpha))
-
+        '''
         # Create new individual
         return Individual(parent1.problem, offspring_polygons)
 

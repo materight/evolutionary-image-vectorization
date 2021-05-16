@@ -22,13 +22,14 @@ ea = GA(
     img,
     pop_size=50,
     n_poly=50,
-    n_vertex=3,
+    n_vertex=5,
     selection_cutoff=.1,
     mutation_chances=(0.01, 0.01, 0.01),
     mutation_factors=(0.2, 0.2, 0.2)
 )
 
 # Particle swarm optimization
+'''
 pso = PSO(
     img,
     swarm_size=300,
@@ -36,13 +37,12 @@ pso = PSO(
     coeffs = (0.5, 4.1, 0.1), # Inertia, cognitive coeff, social coeff
     min_distance=0
 )
-
+'''
 
 hbest, havg, hworst = [], [], []
 while True:
     start_time = time.time()
     
-    '''
     gen, best, population = ea.next()
     
     tot_time = round((time.time() - start_time)*1000)
@@ -70,6 +70,7 @@ while True:
     target_img = np.where(best_img[:,:] == [255,255,255], [0,0,255], target_img[:,:]).astype(np.uint8)
     cv.imshow('Result', np.hstack([img, target_img, best_img]))
     
+    '''
     
     if cv.waitKey(1) & 0xFF == ord('q'):
         break 
