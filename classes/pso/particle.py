@@ -10,13 +10,13 @@ class Particle:
         self.problem = problem
         self.line = line
         self.velocity = velocity
-        self.personal_best = line
         self._fitness = None
+        self.personal_best, self.personal_best_fitness = self.line.copy(), self.fitness
 
     def random(problem):
         # Init random particle
         line = Line.random(problem)
-        velocity = rand(line.size) * 2 - 1
+        velocity = np.zeros(line.size)
         return Particle(problem, line, velocity)
 
     def move(self, i, swarm, neighborhood_size, coeffs, min_distance):
@@ -24,7 +24,7 @@ class Particle:
         #swarm.sort(key=lambda p: p.line.dist(self.line)) # TODO: optimize neighborhood computation
         #neighborhood = swarm[:neighborhood_size]
 
-        #neighborhood_idx = np.arange(i-neighborhood_size//2, i+neighborhood_size//2+1)) # Ring topology
+        #neighborhood_idx = np.arange(i-neighborhood_size//2, i+neighborhood_size//2+1) # Ring topology
         
         neighborhood_start = (i//neighborhood_size)*neighborhood_size # Star topolgy
         neighborhood_idx = np.arange(neighborhood_start, neighborhood_start+neighborhood_size)
@@ -46,6 +46,9 @@ class Particle:
         self.line.update(self.velocity)        
         # Reset fitness
         self._fitness = None
+        # Update personal best
+        if self.fitness < self.personal_best_fitness:
+            self.personal_best, self.personal_best_fitness = self.line.copy(), self.fitness
 
     @property
     def fitness(self):

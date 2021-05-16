@@ -25,6 +25,9 @@ class Line:
         # Clip position if outside image borders
         self.x[:2] = np.clip(self.x[:2], LENGTH//2 + 1, self.img_size - LENGTH//2 - 1) 
 
+    def copy(self):
+        return Line(self.img_size.copy(), self.x.copy())
+
     @property
     def center(self):
         return self.x[:2]
