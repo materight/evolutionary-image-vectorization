@@ -6,7 +6,7 @@ from numba import njit
 from ..utils import clip, normal
 
 PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
-LINE_LENGTH = 20
+LINE_LENGTH = 10
 ALPHA_MIN, ALPHA_MAX = 40, 200
 
 

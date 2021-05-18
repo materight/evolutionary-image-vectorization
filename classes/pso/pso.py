@@ -19,9 +19,11 @@ class PSO:
 
     def next(self):
         self.iteration += 1
+        fitness = 0
         for i, particle in enumerate(self.swarm):
             particle.move(i, self.swarm, self.neighborhood_size, self.coeffs, self.min_distance)
-        return self.iteration
+            fitness += particle.fitness
+        return self.iteration, fitness
 
     def draw(self):
         scale = 1/self.problem.scale_factor  # Rescale internal image target to full scale
@@ -35,5 +37,3 @@ class PSO:
 
     def update_target(self, target):
         self.problem.set_target(target)
-    
-
