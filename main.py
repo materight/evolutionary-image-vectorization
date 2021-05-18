@@ -4,7 +4,6 @@ import cv2 as cv
 import matplotlib.pyplot as plt, matplotlib.colors as mplc
 import time
 
-
 from classes.ga.ga import GA
 from classes.pso.pso import PSO
 
@@ -12,8 +11,8 @@ from classes.pso.pso import PSO
 cv.namedWindow('Result')
 
 # Load image
-IMAGE = 'mona_lisa'
-ALGORITHM = PSO  # GA or PSO
+IMAGE = 'unitn'
+ALGORITHM = GA  # GA or PSO
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
 # Save result as video
