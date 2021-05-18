@@ -14,7 +14,7 @@ cv.namedWindow('Result')
 # Load image
 IMAGE = 'mona_lisa'
 ALGORITHM = PSO  # GA or PSO
-img = cv.cvtColor(np.array(Image.open(f'img/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
+img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
 # Save result as video
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
