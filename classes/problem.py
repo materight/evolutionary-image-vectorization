@@ -1,4 +1,4 @@
-import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
 
@@ -16,9 +16,10 @@ class Problem:
         if self.problem_type == self.RGB:
             self.target = cv.resize(target, (0, 0), fx=self.scale_factor, fy=self.scale_factor)
         elif self.problem_type == self.EDGES:
-            gray_filtered = cv.bilateralFilter(target, 9, 80, 50)
+            gray_filtered = cv.cvtColor(target, cv.COLOR_BGR2GRAY)
+            gray_filtered = cv.bilateralFilter(gray_filtered, 9, 80, 50)
             # Extract image contours
-            self.target = cv.Canny(gray_filtered, 100, 200)
+            self.target = cv.Canny(gray_filtered, 140, 150)
             self.target = np.where(self.target > 0, 0, 255).astype(np.uint8)
             # Compute distance-based fitness landscape
             self.target = cv.distanceTransform(self.target, cv.DIST_C, 3)

@@ -29,10 +29,13 @@ class PSO:
         scale = 1/self.problem.scale_factor  # Rescale internal image target to full scale
         img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='black')
         draw = ImageDraw.Draw(img, 'RGB')
-        for particle in self.swarm:
-            draw.line(tuple(particle.line.coords*scale), fill=(255,255,255), width=int(scale))
+        s = self.swarm.copy()
+        s.sort(key=lambda p: p.fitness)
+        for i, particle in enumerate(s):
+            draw.line(tuple(particle.line.coords*scale), fill=(255,255,255), width=2*int(scale))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
+        
         return img
 
     def update_target(self, target):

@@ -35,8 +35,8 @@ class Particle:
         # Update velocity
         w, phi1, phi2 = coeffs # Inertia, cognitive coeff, social coeff
         inertia = w * self.velocity
-        cognitive_update = phi1 * rand(self.line.size) * self.personal_best.diff(self.line)
-        social_update = phi2 * rand(self.line.size) * nhood_best.diff(self.line)
+        cognitive_update = phi1 * rand() * self.personal_best.diff(self.line)
+        social_update = phi2 * rand() * nhood_best.diff(self.line)
         self.velocity = inertia + cognitive_update + social_update
         # Mantain a separation between particles in the neighborhood
         for p in neighborhood:
@@ -54,11 +54,25 @@ class Particle:
     def fitness(self):
         if self._fitness is None:
             p1j, p1i, p2j, p2i = self.line.coords
-            points = [(p1i, p1j), (p2i, p2j)]
-            for k in range(1, FITNESS_POINTS - 1):
-                newi = p1i + (((p2i - p1i) / (FITNESS_POINTS - 1)) * k)
-                newj = p1j + (((p2j - p1j) / (FITNESS_POINTS - 1)) * k)
-                points.append((newi, newj))
-            points = np.floor(points).astype(np.int)
-            self._fitness = np.sum(self.problem.target[points].astype(np.int)**2)
+            w, h = (p2i - p1i) / FITNESS_POINTS, (p2j - p1j) / FITNESS_POINTS
+            points = [(p1i + w * k, p1j + h * k)  for k in range(0, FITNESS_POINTS)]
+            points = np.floor(points).astype(int)
+
+
+            '''
+            import matplotlib.pyplot as plt
+            plt.imshow(self.problem.target)
+            print(points)
+            print(self.problem.target[tuple(points.T)])
+            for p in points:
+                plt.scatter(p[1], p[0], c='r', s=1)
+            for p in points[:1]:
+                print(p, self.problem.target[(p[0]), (p[1])])
+                plt.annotate(self.problem.target[(p[0]), (p[1])], (p[1], p[0]))
+            plt.show()
+            '''
+            
+           
+            
+            self._fitness = np.sum(self.problem.target[tuple(points.T)].astype(np.int)**2)
         return self._fitness

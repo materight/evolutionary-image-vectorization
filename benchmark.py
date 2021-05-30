@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 import pandas as pd
 import cv2 as cv
-import sys, time, itertools
+import os, sys, shutil, time, itertools
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
@@ -11,6 +11,7 @@ from tqdm import tqdm
 from classes.ga.ga import GA
 from classes.pso.pso import PSO
 
+RESULTS_BASE_PATH = 'results/benchmark'
 IMAGE = 'mona_lisa'
 ALGORITHM = GA # GA or PSO
 MAX_GENERATIONS = 500
@@ -32,6 +33,11 @@ ALGORITHM_PARAMS = {
     ),
 }
 
+# Create folder for results
+if os.path.exists(RESULTS_BASE_PATH):
+    shutil.rmtree(RESULTS_BASE_PATH)
+os.makedirs(RESULTS_BASE_PATH)
+
 # Generate params list with all possible combinations
 keys, values = zip(*ALGORITHM_PARAMS[ALGORITHM].items())
 params_list = [dict(zip(keys, v)) for v in itertools.product(*values)]
@@ -46,30 +52,44 @@ def run(run_idx, params):
     pbar = tqdm(total=MAX_GENERATIONS, desc=f'Run {run_idx}', position=run_idx)
     for i in range(MAX_GENERATIONS):
         start_time = time.time()
-        res = alg.next()
-        tot_time = round((time.time() - start_time)*1000)
         if ALGORITHM is GA:
-            gen, best, population = res
+            gen, best, population = alg.next()
             fitness = best.fitness
         elif ALGORITHM is PSO:
-            gen, fitness = res
+            gen, fitness = alg.next()
+        tot_time = round((time.time() - start_time)*1000)
         times.append(tot_time)
         fitnesses.append(fitness)
         sys.stdout.flush()
         pbar.update()
+    # Save best individual
+    if ALGORITHM is GA:
+        best_individual = None#best.draw()
+    elif ALGORITHM is PSO:
+        best_individual = None#alg.draw()
     pbar.close()
-    return times, fitnesses
+    return times, fitnesses, best_individual
 
 start_time = time.time()
 # Launch different subprocesses for each combination
 with ProcessPoolExecutor(mp_context=mp.get_context('fork')) as executor:
     futures = [executor.submit(run, i, params) for i, params in enumerate(params_list)] #tqdm(total=MAX_GENERATIONS, position=i)
     results = [future.result() for future in futures]
-    times, fitnesses = zip(*results)
+    times, fitnesses, best_individual = zip(*results)
 
+# Save best generated individuals for each run
+'''
+TODO
+os.makedirs(f'{RESULTS_BASE_PATH}/best_individuals')
+for i, img in enumerate(best_individual):
+    cv.imwrite(f'{RESULTS_BASE_PATH}/best_individuals/{i}.jpg', img)
+'''
+
+# Compute dataframe from results
 results = pd.DataFrame.from_dict(params_list)
 results['best_fitness'] = [np.min(f) for f in fitnesses]
 results['avg_time_ms'] = [np.mean(t, dtype=int) for t in times]
+results.to_csv('results/results.csv', sep='\t')
 
 # Compute total time spent
 for r in results: print('\n')

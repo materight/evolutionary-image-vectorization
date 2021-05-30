@@ -11,8 +11,8 @@ from classes.pso.pso import PSO
 cv.namedWindow('Result')
 
 # Load image
-IMAGE = 'unitn'
-ALGORITHM = GA  # GA or PSO
+IMAGE = 'mona_lisa'
+ALGORITHM = PSO # GA or PSO
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
 # Save result as video
@@ -35,8 +35,8 @@ pso = PSO(
     img,
     swarm_size=200,
     neighborhood_size=3,
-    coeffs=(0.5, 0.1, 0.4), # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
-    min_distance=5
+    coeffs=(0.5, 0.4, 0.01), # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
+    min_distance=10
 )
 
 hbest = []
@@ -44,10 +44,10 @@ while True:
     start_time = time.time()
 
     # Compute next generation
-    if ALGORITHM == GA: 
+    if ALGORITHM is GA: 
         gen, best, population = ea.next()
         fitness = best.fitness
-    else: 
+    elif ALGORITHM is PSO: 
         gen, fitness = pso.next()
 
     # Print and save result
@@ -56,10 +56,11 @@ while True:
     hbest.append(fitness)
 
     # Obtain current best solution
-    if ALGORITHM == GA: 
+    target_img = None
+    if ALGORITHM is GA: 
         best_img = best.draw()
-    else:
-        target_img = np.log(pso.problem.target+1)
+    elif ALGORITHM is PSO:
+        target_img = np.log(pso.problem.target.copy()+1)
         target_img = cv.normalize(target_img, None, 0, 255, norm_type=cv.NORM_MINMAX)
         target_img = cv.cvtColor(target_img.astype(np.uint8), cv.COLOR_GRAY2BGR)
         best_img = pso.draw()
@@ -67,13 +68,18 @@ while True:
     
     # Show current best
     best_img = cv.resize(best_img, img.shape[1::-1])
-    result = cv.resize(np.hstack([img, best_img]), None, fx=.6, fy=.6) # target_img
+    result = np.hstack([img, best_img]) 
+    if target_img is not None: result = np.hstack([result, target_img])
+    result = cv.resize(result, None, fx=.6, fy=.6) # target_img 
     cv.imshow('Result', result) 
     
     # Save result in video
     if gen % 5 == 0:
         out_frame = cv.putText(best_img.copy(), f'{gen}', (2,16), cv.FONT_HERSHEY_PLAIN, 1.3, (255,255,255), 2)
         out.write(out_frame)
+
+    if cv.waitKey(1) & 0xFF == ord(' '):
+        cv.waitKey(0) 
 
     if cv.waitKey(1) & 0xFF == ord('q'):
         break 
