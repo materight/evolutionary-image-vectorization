@@ -35,8 +35,8 @@ pso = PSO(
     img,
     swarm_size=200,
     neighborhood_size=3,
-    coeffs=(0.5, 0.4, 0.01), # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
-    min_distance=10
+    coeffs=(0.1, 0.4, 0.2), # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
+    min_distance=5
 )
 
 hbest = []

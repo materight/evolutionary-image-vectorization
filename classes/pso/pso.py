@@ -35,7 +35,6 @@ class PSO:
             draw.line(tuple(particle.line.coords*scale), fill=(255,255,255), width=2*int(scale))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-        
         return img
 
     def update_target(self, target):

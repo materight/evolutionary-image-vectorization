@@ -16,7 +16,7 @@ class Particle:
     def random(problem):
         # Init random particle
         line = Line.random(problem)
-        velocity = np.zeros(line.size)
+        velocity = rand(line.size)*10
         return Particle(problem, line, velocity)
 
     def move(self, i, swarm, neighborhood_size, coeffs, min_distance):
@@ -35,8 +35,8 @@ class Particle:
         # Update velocity
         w, phi1, phi2 = coeffs # Inertia, cognitive coeff, social coeff
         inertia = w * self.velocity
-        cognitive_update = phi1 * rand() * self.personal_best.diff(self.line)
-        social_update = phi2 * rand() * nhood_best.diff(self.line)
+        cognitive_update = phi1 * rand(self.line.size) * self.personal_best.diff(self.line)
+        social_update = phi2 * rand(self.line.size) * nhood_best.diff(self.line)
         self.velocity = inertia + cognitive_update + social_update
         # Mantain a separation between particles in the neighborhood
         for p in neighborhood:
@@ -59,11 +59,12 @@ class Particle:
             points = np.floor(points).astype(int)
 
 
-            '''
+            '''            
             import matplotlib.pyplot as plt
             plt.imshow(self.problem.target)
             print(points)
             print(self.problem.target[tuple(points.T)])
+            plt.plot(self.line.coords.T[0], self.line.coords.T[1], c='k')
             for p in points:
                 plt.scatter(p[1], p[0], c='r', s=1)
             for p in points[:1]:
@@ -71,8 +72,6 @@ class Particle:
                 plt.annotate(self.problem.target[(p[0]), (p[1])], (p[1], p[0]))
             plt.show()
             '''
-            
-           
             
             self._fitness = np.sum(self.problem.target[tuple(points.T)].astype(np.int)**2)
         return self._fitness
