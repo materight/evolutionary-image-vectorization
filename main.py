@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt, matplotlib.colors as mplc
 import time
 
 from classes import selection
-from classes.ga.individual import Individual
 from classes.ga.ga import GA
+from classes.ga.individual import Individual
 from classes.pso.pso import PSO
+from classes.pso.particle import Particle
 
 # Set windows properties
 cv.namedWindow('Result')
@@ -38,6 +39,8 @@ ga = GA(
 pso = PSO(
     img,
     swarm_size=200,
+    velocity_update_rule=Particle.STANDARD,  # Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING
+    neighborhood_topology=Particle.RING_TOPOLOGY,  # Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY
     neighborhood_size=3,
     coeffs=(0.1, 1.5, 1.5), # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
     min_distance=0,
