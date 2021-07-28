@@ -14,7 +14,7 @@ cv.namedWindow('Result')
 
 # Load image
 IMAGE = 'mona_lisa'
-ALGORITHM = GA # GA or PSO
+ALGORITHM = PSO # GA or PSO
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
 # Save result as video
@@ -31,7 +31,7 @@ ga = GA(
     crossover_type=Individual.UNIFORM_CROSSOVER,  # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.FITNESS_PROPORTIONAL_CROSSOVER
     mutation_chances=(0.01, 0.01, 0.01),
     mutation_factors=(0.2, 0.2, 0.2),
-    niche_size=0.001 # 0.001, 0
+    niche_size=0 # 0.001, 0
 )
 
 # Particle swarm optimization
@@ -39,8 +39,9 @@ pso = PSO(
     img,
     swarm_size=200,
     neighborhood_size=3,
-    coeffs=(0.1, 0.4, 0.2), # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
-    min_distance=5
+    coeffs=(0.1, 1.5, 1.5), # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
+    min_distance=0,
+    max_velocity=20
 )
 
 fbest, favg, fworst = [], [], [] 

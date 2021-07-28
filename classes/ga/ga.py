@@ -11,6 +11,7 @@ class GA:
     def __init__(self, target, pop_size=50, n_poly=[100], n_vertex=3, selection_strategy=selection.TruncatedSelection(0.1), crossover_type=Individual.UNIFORM_CROSSOVER, mutation_chances=(0.01, 0.01, 0.01), mutation_factors=(0.2, 0.2, 0.2), niche_size=0.1, internal_resolution=75):
         self.generation = 0
         self.problem = Problem(Problem.RGB, target, internal_resolution)
+        self.pop_size = pop_size
         self.n_poly = n_poly
         self.n_vertex = n_vertex
         self.selection_strategy = selection_strategy
@@ -59,14 +60,15 @@ class GA:
         for ind in offspring:
             ind.mutate(next_idx, self.mutation_chances, self.mutation_factors)
 
-
-        # Survivor selection
-        self.population = offspring
-
-
+    
         # Sort population by fitness
+        self.population = offspring
         pairwise_dist = self.sort_population()
         diversity = pairwise_dist.sum() / 2 if pairwise_dist is not None else None
+
+        # Survivor selection
+        self.population = self.population[:self.pop_size]
+
 
         return self.generation, self.population, diversity
 
