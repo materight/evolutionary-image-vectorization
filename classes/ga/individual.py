@@ -9,49 +9,65 @@ from .polygon import Polygon
 
 class Individual:
 
+    ONE_POINT_CROSSOVER = 1
+    UNIFORM_CROSSOVER = 2
+    ALIGNED_CROSSOVER = 3
+
     def __init__(self, problem, polygons):
         self.problem = problem
         self.polygons = polygons
         self._fitness = None
 
+
     def random(problem, n_poly, n_vertex):
         # Init random individual
-        polygons = [Polygon.random(problem, n_vertex) for i in range(n_poly)]
+        polygons = [Polygon.random(idx, problem, n_vertex) for idx in range(n_poly)]
         return Individual(problem, polygons)
 
-    def crossover(parent1, parent2):
+
+    def crossover(parent1, parent2, kind):
         polygons1, polygons2 = [p.copy() for p in parent1.polygons], [p.copy() for p in parent2.polygons]
-        # One-point split
-        split_idx = randint(0, max(parent1.n_poly, parent2.n_poly))
-        offspring_polygons = polygons1[:split_idx] + polygons2[split_idx:]
-        '''
-        # Uniform
-        #offspring_polygons = [polygons1[i] if rand() < 0.5 else polygons2[i] for i in range(min(parent1.n_poly, parent2.n_poly))]
-        offspring_polygons = []
-        THRESH = 0.5 # parent1.fitness / (parent1.fitness + parent2.fitness) # Proportional to fitness
-        for i in range(min(parent1.n_poly, parent2.n_poly)):
-            pts, color, alpha = np.zeros_like(polygons1[i].pts), np.zeros_like(polygons1[i].color), None
-            for j in range(pts.shape[0]):
-                for k in range(pts.shape[1]):
-                    pts[j, k] = polygons1[i].pts[j, k] if rand() < THRESH else polygons2[i].pts[j, k]
-            for j in range(color.shape[0]):
-                color[j] = polygons1[i].color[j] if rand() < THRESH else polygons2[i].color[j]
-            alpha = polygons1[i].alpha if rand() < THRESH else polygons2[i].alpha
-            offspring_polygons.append(Polygon(polygons1[i].img_size.copy(), pts, color, alpha))
-        '''
+        if kind == Individual.ONE_POINT_CROSSOVER:
+            split_idx = randint(0, max(parent1.n_poly, parent2.n_poly))
+            offspring_polygons = polygons1[:split_idx] + polygons2[split_idx:]
+        elif kind == Individual.UNIFORM_CROSSOVER:
+            offspring_polygons = [polygons1[i] if rand() < 0.5 else polygons2[i] for i in range(min(parent1.n_poly, parent2.n_poly))] # Common polygons
+        elif kind == Individual.ALIGNED_CROSSOVER:
+            '''
+            offspring_polygons = []
+            i1, i2 = 0, 0
+            while i1 < len(polygons1) and i2 < len(polygons2):
+                poly1 = polygons1[i1] if i1 < len(polygons1) else None
+                poly2 = polygons2[i2] if i2 < len(polygons2) else None
+                # Excess polygons
+                if poly1 is None or poly2 is None: 
+                    offspring_polygons.append(poly1 if poly2 is None else poly2)
+                    i1, i2 = i1+1, i2+1
+                # Matching polygons
+                elif poly1.idx == poly2.idx:
+                    offspring_polygons.append(poly1)
+                    i1, i2 = i1+1, i2+1
+                # Disjoint polygons
+                else: 
+                    if poly1.idx < poly2.idx: i1 = i1+1
+                    else: i2 = i2+1
+            '''
+        else: 
+            raise ValueError(f'Invalid crossover kind "{kind}"')
         # Create new individual
         return Individual(parent1.problem, offspring_polygons)
 
-    def mutate(self, mutation_chances, mutation_factors):
+
+    def mutate(self, next_idx, mutation_chances, mutation_factors):
         # Muatate polygons
         for poly in self.polygons:
             poly.mutate(*mutation_chances, *mutation_factors)
-        # Randomly replace two polygons' positions
+        # Randomly add a new polygon
         if rand() < mutation_chances[0]:
-            i1, i2 = randint(0, self.n_poly, 2)
-            self.polygons[i1], self.polygons[i2] = self.polygons[i2], self.polygons[i1]
-        # Reset fitness and image value
+            self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex))
+        # Reset fitness
         self._fitness = None
+
 
     def draw(self, full_res=True):
         scale = 1/self.problem.scale_factor if full_res else 1  # Rescale internal image target to full scale
@@ -66,9 +82,36 @@ class Individual:
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img
 
+    
+    def dist(self, individual):
+        excess_count, match_count, disjoint_count = 0, 0, 0 
+        max_n_poly = max(len(self.polygons), len(individual.polygons))
+        polygons_dist = 0
+        i1, i2 = 0, 0
+        while i1 < len(self.polygons) and i2 < len(individual.polygons):
+            poly1 = self.polygons[i1] if i1 < len(self.polygons) else None
+            poly2 = individual.polygons[i2] if i2 < len(individual.polygons) else None
+            # Excess polygons
+            if poly1 is None or poly2 is None: 
+                excess_count += 1
+                i1, i2 = i1+1, i2+1
+            # Matching polygons
+            elif poly1.idx == poly2.idx: 
+                polygons_dist += poly1.dist(poly2)
+                match_count += 1
+                i1, i2 = i1+1, i2+1
+            # Disjoint polygons
+            else: 
+                disjoint_count += 1
+                if poly1.idx < poly2.idx: i1 = i1+1
+                else: i2 = i2+1
+        return (excess_count / max_n_poly) + (disjoint_count / max_n_poly) + (polygons_dist / match_count) # Inspired by NEAT speciation
+
+
     @property
     def n_poly(self):
         return len(self.polygons)
+
 
     @property
     def fitness(self):
@@ -79,3 +122,4 @@ class Individual:
                 image = cv.cvtColor(self.draw(full_res=False), cv.COLOR_BGR2GRAY) 
                 self._fitness = np.sum(self.problem.target[image > 0].astype(np.int)**2)
         return self._fitness
+    
