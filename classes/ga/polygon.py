@@ -3,7 +3,7 @@ from numpy import random
 from numpy.random import randint, rand
 from numba import njit
 
-from ..utils import clip, normal
+from ..utils import clip, clockwise_sort, normal, uniform
 
 PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
 LINE_LENGTH = 10
@@ -34,6 +34,7 @@ class Polygon:
 
     def mutate(self, pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor):
         self.pts, self.color, self.alpha = Polygon._mutate(self.img_size, self.pts, self.color, self.alpha ,pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor)
+        #self.pts = np.array(clockwise_sort(self.pts.tolist()))
 
 
     @njit
@@ -46,6 +47,10 @@ class Polygon:
             for j, x in enumerate(pt):
                 if rand() < pts_chance:
                     pts[i, j] = int(clip(x + normal(scale=pts_factor//4), 0, img_size[j]))
+        # Add random vertex
+        if  len(pts) < 6 and rand() < pts_chance: # Maximum 6 vertex
+            new_x, new_y = int(uniform(minv=0, maxv=img_size[0])), int(uniform(minv=0, maxv=img_size[1]))
+            pts = np.append(pts, np.array([[new_x, new_y]]), axis=0)
         # Mutate color
         for i, c in enumerate(color):
             if rand() < color_chance:
@@ -71,6 +76,22 @@ class Polygon:
     @property
     def n_vertex(self):
         return len(self.pts)
+
+
+    @property
+    def area(self):
+        return Polygon._area(self.pts)
+        
+    @njit
+    def _area(pts):
+        # Calculate polygon area using Shoelace formula
+        area = 0
+        n_vertex = len(pts)
+        j = n_vertex - 1
+        for i in range(0, n_vertex):
+            area += (pts[j, 0] + pts[i, 0]) * (pts[j, 1] - pts[i, 1])
+            j = i 
+        return int(abs(area / 2.0)) # Return absolute value
 
 
     def copy(self):

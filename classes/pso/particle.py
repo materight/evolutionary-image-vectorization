@@ -86,8 +86,8 @@ class Particle:
 
 
         # Maintain a separation between particles in the neighborhood
-        for p in neighborhood:
-            if self.line.dist(p.line) < min_distance:
+        for p in swarm:
+            if p != self and self.line.dist(p.line) < min_distance:
                 self.velocity[:2] -= (p.line.center - self.line.center)
 
 

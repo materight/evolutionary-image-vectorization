@@ -18,11 +18,17 @@ class Problem:
         elif self.problem_type == self.EDGES:
             gray_filtered = cv.cvtColor(target, cv.COLOR_BGR2GRAY)
             gray_filtered = cv.bilateralFilter(gray_filtered, 9, 80, 50)
+            # Automatically determine Canny hyper-parameters
+            sigma = 0.33
+            v = np.median(gray_filtered)
+            lower, upper = int(max(0, (1.0 - sigma) * v)), int(min(255, (1.0 + sigma) * v)) 
             # Extract image contours
-            self.target = cv.Canny(gray_filtered, 140, 150)
+            self.target = cv.Canny(gray_filtered, lower, upper)
             self.target = np.where(self.target > 0, 0, 255).astype(np.uint8)
             # Compute distance-based fitness landscape
             self.target = cv.distanceTransform(self.target, cv.DIST_C, 3)
             #self.target = np.log(self.target+1)
             self.target = cv.normalize(self.target, None, 0, 255, cv.NORM_MINMAX)
         
+
+

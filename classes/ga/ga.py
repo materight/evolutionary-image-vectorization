@@ -8,7 +8,8 @@ from ..problem import Problem
 from .individual import Individual
 
 class GA:
-    def __init__(self, target, pop_size=50, n_poly=[100], n_vertex=3, selection_strategy=selection.TruncatedSelection(0.1), crossover_type=Individual.UNIFORM_CROSSOVER, mutation_chances=(0.01, 0.01, 0.01), mutation_factors=(0.2, 0.2, 0.2), niche_size=0.1, internal_resolution=75):
+    
+    def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_strategy=selection.TruncatedSelection(0.1), crossover_type=Individual.UNIFORM_CROSSOVER, mutation_chances=(0.01, 0.01, 0.01), mutation_factors=(0.2, 0.2, 0.2), niche_size=0.1, internal_resolution=75):
         self.generation = 0
         self.problem = Problem(Problem.RGB, target, internal_resolution)
         self.pop_size = pop_size
@@ -19,14 +20,16 @@ class GA:
         self.mutation_chances = mutation_chances
         self.mutation_factors = mutation_factors
         self.niche_size = niche_size
+        self.next_idx = 0
         self.population = []
         for i in range(pop_size):
-            self.population.append(Individual.random(self.problem, self.n_poly[i % len(self.n_poly)], self.n_vertex))
+            self.population.append(Individual.random(self.problem, self.next_idx, self.n_poly, self.n_vertex))
+            self.next_idx += self.n_poly
         self.sort_population()
+
 
     def next(self):
         self.generation += 1
-        next_idx = max(self.n_poly) + self.generation
         
         # Selection
         selection_probs = np.ones(len(self.population))
@@ -58,7 +61,7 @@ class GA:
 
         # Mutation
         for ind in offspring:
-            ind.mutate(next_idx, self.mutation_chances, self.mutation_factors)
+            self.next_idx = ind.mutate(self.next_idx, self.mutation_chances, self.mutation_factors)
 
     
         # Sort population by fitness

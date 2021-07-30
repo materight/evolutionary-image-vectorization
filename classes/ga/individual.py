@@ -13,15 +13,16 @@ class Individual:
     UNIFORM_CROSSOVER = 2
     ALIGNED_CROSSOVER = 3
 
+
     def __init__(self, problem, polygons):
         self.problem = problem
         self.polygons = polygons
         self._fitness = None
 
 
-    def random(problem, n_poly, n_vertex):
+    def random(problem, next_idx, n_poly, n_vertex):
         # Init random individual
-        polygons = [Polygon.random(idx, problem, n_vertex) for idx in range(n_poly)]
+        polygons = [Polygon.random(next_idx + idx, problem, n_vertex) for idx in range(n_poly)]
         return Individual(problem, polygons)
 
 
@@ -33,7 +34,6 @@ class Individual:
         elif kind == Individual.UNIFORM_CROSSOVER:
             offspring_polygons = [polygons1[i] if rand() < 0.5 else polygons2[i] for i in range(min(parent1.n_poly, parent2.n_poly))] # Common polygons
         elif kind == Individual.ALIGNED_CROSSOVER:
-            '''
             offspring_polygons = []
             i1, i2 = 0, 0
             while i1 < len(polygons1) and i2 < len(polygons2):
@@ -41,17 +41,26 @@ class Individual:
                 poly2 = polygons2[i2] if i2 < len(polygons2) else None
                 # Excess polygons
                 if poly1 is None or poly2 is None: 
-                    offspring_polygons.append(poly1 if poly2 is None else poly2)
+                    if poly1 is not None and parent1.fitness >= parent2.fitness:
+                        offspring_polygons.append(poly1)
+                    elif poly2 is not None and parent2.fitness >= parent1.fitness:
+                        offspring_polygons.append(poly2)
                     i1, i2 = i1+1, i2+1
                 # Matching polygons
                 elif poly1.idx == poly2.idx:
-                    offspring_polygons.append(poly1)
+                    if parent1.fitness >= parent2.fitness:
+                        offspring_polygons.append(poly1)
+                    elif parent2.fitness >= parent1.fitness:
+                        offspring_polygons.append(poly2)
                     i1, i2 = i1+1, i2+1
                 # Disjoint polygons
                 else: 
-                    if poly1.idx < poly2.idx: i1 = i1+1
-                    else: i2 = i2+1
-            '''
+                    if poly1.idx < poly2.idx: 
+                        if parent1.fitness >= parent2.fitness or len(offspring_polygons) == 0 or rand() < 0.1: offspring_polygons.append(poly1)
+                        i1 = i1+1
+                    else: 
+                        if parent2.fitness >= parent1.fitness or len(offspring_polygons) == 0 or rand() < 0.1: offspring_polygons.append(poly2)
+                        i2 = i2+1
         else: 
             raise ValueError(f'Invalid crossover kind "{kind}"')
         # Create new individual
@@ -62,11 +71,24 @@ class Individual:
         # Muatate polygons
         for poly in self.polygons:
             poly.mutate(*mutation_chances, *mutation_factors)
+        '''
+        # Remove small polygons (irrelevant to the results)
+        i = 0
+        while i < len(self.polygons):
+            if self.polygons[i].area < 5: 
+                del self.polygons[i]
+                self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex)) # Replace remove polygon
+                next_idx += 1
+            else: i += 1
+        '''
         # Randomly add a new polygon
-        if rand() < mutation_chances[0]:
+        if rand() < mutation_chances[0]*10:
             self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex))
+            next_idx += 1
         # Reset fitness
         self._fitness = None
+        # Return true if the current historcial marking has been used
+        return next_idx
 
 
     def draw(self, full_res=True):
