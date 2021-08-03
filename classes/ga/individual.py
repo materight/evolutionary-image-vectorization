@@ -71,8 +71,8 @@ class Individual:
         # Muatate polygons
         for poly in self.polygons:
             poly.mutate(*mutation_chances, *mutation_factors)
-        '''
         # Remove small polygons (irrelevant to the results)
+        '''
         i = 0
         while i < len(self.polygons):
             if self.polygons[i].area < 5: 
@@ -80,11 +80,11 @@ class Individual:
                 self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex)) # Replace remove polygon
                 next_idx += 1
             else: i += 1
-        '''
         # Randomly add a new polygon
         if rand() < mutation_chances[0]*10:
             self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex))
             next_idx += 1
+        '''
         # Reset fitness
         self._fitness = None
         # Return true if the current historcial marking has been used
@@ -106,8 +106,8 @@ class Individual:
 
     
     def dist(self, individual):
-        excess_count, match_count, disjoint_count = 0, 0, 0 
-        max_n_poly = max(len(self.polygons), len(individual.polygons))
+        excess_count, match_count, disjoint_count = 1, 1, 1 
+        max_n_poly = max(len(self.polygons), len(individual.polygons)) + 1
         polygons_dist = 0
         i1, i2 = 0, 0
         while i1 < len(self.polygons) and i2 < len(individual.polygons):

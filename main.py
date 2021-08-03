@@ -25,11 +25,11 @@ out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{IMAGE}.mp4', fourcc, 30, im
 # Genetic algorithm
 ga = GA(
     img,
-    pop_size=50,
+    pop_size=100,
     n_poly=150, # Initialize individuals with different numbers of polygons
     n_vertex=4,
     selection_strategy=selection.TruncatedSelection(.1),  # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
-    crossover_type=Individual.UNIFORM_CROSSOVER,  # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.FITNESS_PROPORTIONAL_CROSSOVER
+    crossover_type=Individual.UNIFORM_CROSSOVER,  # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ALIGNED_CROSSOVER
     mutation_chances=(0.01, 0.01, 0.01),
     mutation_factors=(0.2, 0.2, 0.2),
     niche_size=0 # 0.001, 0
