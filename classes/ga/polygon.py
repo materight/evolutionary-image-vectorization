@@ -11,15 +11,15 @@ ALPHA_MIN, ALPHA_MAX = 10, 250
 
 
 class Polygon:
-    def __init__(self, idx, img_size, pts, color, alpha, es):
+    def __init__(self, idx, img_size, pts, color, alpha, strategy_params):
         self.idx = idx  # Historical marking
         self.img_size = img_size
         self.pts = pts
         self.color = color
         self.alpha = alpha
-        self.es = es
+        self.strategy_params = strategy_params
 
-    def random(idx, problem, n_vertex, use_es=False):
+    def random(idx, problem, n_vertex, evolution_strategies):
         # Initialize the polygon's points randomly
         img_size = np.array(problem.target.shape[:2][::-1])
         pos = randint(low=0, high=img_size, size=2)  # Generale position of the polygon, to which start creating points
@@ -30,39 +30,49 @@ class Polygon:
         color = randint(0, 256, (3))  # RGB
         alpha = randint(ALPHA_MIN, ALPHA_MAX)  # Alpha channel
         # Init ES parameters
-        es = (rand(), rand(), rand()) if use_es else None
-        return Polygon(idx, img_size, pts, color, alpha, es)
+        strategy_params = rand((3)) if evolution_strategies else None
+        return Polygon(idx, img_size, pts, color, alpha, strategy_params)
 
-    def mutate(self, pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor):
-        self.pts, self.color, self.alpha, self.es = Polygon._mutate(self.img_size, self.pts, self.color, self.alpha, pts_chance,
-                                                                    color_chance, alpha_chance, pts_factor, color_factor, alpha_factor, self.es)
+    def mutate(self, mutation_chances, mutation_factors):
+        self.pts, self.color, self.alpha, self.strategy_params = Polygon._mutate(self.img_size, self.pts, self.color, self.alpha, mutation_chances, mutation_factors, self.strategy_params)
         #self.pts = np.array(clockwise_sort(self.pts.tolist()))
 
     @njit
-    def _mutate(img_size, pts, color, alpha, pts_chance, color_chance, alpha_chance, pts_factor, color_factor, alpha_factor, es):
-        if es is None:
-            pts_factor = img_size.max() * pts_factor
-            color_factor = 255 * color_factor
-            alpha_factor = (ALPHA_MAX - ALPHA_MIN) * alpha_factor
+    def _mutate(img_size, pts, color, alpha, mutation_chances, mutation_factors, strategy_params):
+        pts_chance, color_chance, alpha_chance = mutation_chances
+        if strategy_params is None:
+            # Genetic algorithm
+            pts_factor = (img_size.max() * mutation_factors[0]) / 4
+            color_factor = (255 * mutation_factors[1]) / 4
+            alpha_factor = ((ALPHA_MAX - ALPHA_MIN) * mutation_factors[2]) / 4
         else:
-
-            # Mutate points
+            # Evolution strategies
+            n = pts.size + color.size + 1 # Total size of genotype 
+            tau, tau1 = 1/np.sqrt(2*np.sqrt(n)), 1/np.sqrt(2*n) 
+            epsilon = 0.0001
+            for i, sigma in enumerate(strategy_params):
+                strategy_params[i] = sigma * np.exp(tau * normal() + tau1 * normal())
+                if strategy_params[i] < epsilon: strategy_params[i] = epsilon
+            pts_factor = img_size.max() * strategy_params[0]
+            color_factor = 255  * strategy_params[1]
+            alpha_factor = (ALPHA_MAX - ALPHA_MIN) * strategy_params[2]
+        # Mutate points
         for i, pt in enumerate(pts):
             for j, x in enumerate(pt):
                 if rand() < pts_chance:
-                    pts[i, j] = int(clip(x + normal(scale=pts_factor//4), 0, img_size[j]))
+                    pts[i, j] = int(clip(x + normal(scale=pts_factor), 0, img_size[j]))
         # Add random vertex
         if len(pts) < 6 and rand() < pts_chance:  # Maximum 6 vertex
             new_x, new_y = int(uniform(minv=0, maxv=img_size[0])), int(uniform(minv=0, maxv=img_size[1]))
-            #pts = np.append(pts, np.array([[new_x, new_y]]), axis=0)
+            #pts = np.append(pts, np.array([[new_x, new_y]]), axis=0) TODO renable
         # Mutate color
         for i, c in enumerate(color):
             if rand() < color_chance:
-                color[i] = int(clip(c + normal(scale=color_factor//4), 0, 255))
+                color[i] = int(clip(c + normal(scale=color_factor), 0, 255))
         # Mutate alpa
         if rand() < alpha_chance:
-            alpha = int(clip(alpha + normal(scale=alpha_factor//4), ALPHA_MIN, ALPHA_MAX))
-        return pts, color, alpha
+            alpha = int(clip(alpha + normal(scale=alpha_factor), ALPHA_MIN, ALPHA_MAX))
+        return pts, color, alpha, strategy_params
 
     def dist(self, poly):
         return Polygon._dist(self.pts, self.color, self.alpha, poly.pts, poly.color, poly.alpha, self.img_size)
@@ -94,4 +104,4 @@ class Polygon:
         return int(abs(area / 2.0))  # Return absolute value
 
     def copy(self):
-        return Polygon(self.idx, self.img_size.copy(), self.pts.copy(), self.color.copy(), self.alpha)
+        return Polygon(self.idx, self.img_size.copy(), self.pts.copy(), self.color.copy(), self.alpha, self.strategy_params)

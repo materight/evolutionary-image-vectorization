@@ -1,4 +1,4 @@
-
+# Parent selection
 class RouletteWheelSelection(): 
     pass
 
@@ -12,3 +12,11 @@ class TruncatedSelection():
 class TournamentSelection(): 
     def __init__(self, k):
         self.k = k 
+
+
+# Survivor selection
+class CommaStrategy(): 
+    pass
+
+class PlusStrategy(): 
+    pass

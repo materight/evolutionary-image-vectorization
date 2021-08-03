@@ -18,9 +18,9 @@ class Individual:
         self.polygons = polygons
         self._fitness = None
 
-    def random(problem, next_idx, n_poly, n_vertex):
+    def random(problem, next_idx, n_poly, n_vertex, evolution_strategies):
         # Init random individual
-        polygons = [Polygon.random(next_idx + idx, problem, n_vertex) for idx in range(n_poly)]
+        polygons = [Polygon.random(next_idx + idx, problem, n_vertex, evolution_strategies) for idx in range(n_poly)]
         return Individual(problem, polygons)
 
     def crossover(parent1, parent2, kind):
@@ -68,7 +68,7 @@ class Individual:
     def mutate(self, next_idx, mutation_chances, mutation_factors):
         # Muatate polygons
         for poly in self.polygons:
-            poly.mutate(*mutation_chances, *mutation_factors)
+            poly.mutate(mutation_chances, mutation_factors)
         # Replace small polygons (irrelevant to the results) with random ones
         '''
         i = 0
@@ -81,7 +81,7 @@ class Individual:
         '''
         # Randomly add a new polygon
         if rand() < mutation_chances[0]:
-            self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex))
+            self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex, self.polygons[-1].strategy_params is not None))
             next_idx += 1
         # Reset fitness
         self._fitness = None
