@@ -5,9 +5,9 @@ from numba import njit
 
 from ..utils import clip, clockwise_sort, normal, uniform
 
-PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
+PTS_RADIUS = 0.2  # Maximm distance radius of generated points in first initialization.
 LINE_LENGTH = 10
-ALPHA_MIN, ALPHA_MAX = 10, 250
+ALPHA_MIN, ALPHA_MAX = 20, 220
 
 
 class Polygon:
@@ -22,21 +22,20 @@ class Polygon:
     def random(idx, problem, n_vertex, evolution_strategies):
         # Initialize the polygon's points randomly
         img_size = np.array(problem.target.shape[:2][::-1])
-        pos = randint(low=0, high=img_size, size=2)  # Generale position of the polygon, to which start creating points
+        pos = rand(2) * img_size  # Generale position of the polygon, to which start creating points
         # Random points inside the radius defined
         radius = (img_size * PTS_RADIUS).astype(np.int)
-        pts = randint(low=pos-radius, high=pos+radius, size=(n_vertex, 2), dtype=np.int32)  # Create
+        pts = rand(n_vertex, 2)*2*radius + (pos - radius) # Create
         pts = np.clip(pts, [0, 0], img_size)  # Clip points outside limits
-        color = randint(0, 256, (3))  # RGB
-        alpha = randint(ALPHA_MIN, ALPHA_MAX)  # Alpha channel
+        color = rand(3) * 256  # RGB
+        alpha = rand() * (ALPHA_MAX - ALPHA_MIN) + ALPHA_MIN  # Alpha channel
         # Init ES parameters
-        strategy_params = rand((3)) if evolution_strategies else None
+        strategy_params = rand(3) if evolution_strategies else None
         return Polygon(idx, img_size, pts, color, alpha, strategy_params)
 
     def mutate(self, mutation_chances, mutation_factors):
         self.pts, self.color, self.alpha, self.strategy_params = Polygon._mutate(self.img_size, self.pts, self.color, self.alpha, mutation_chances, mutation_factors, self.strategy_params)
-        #self.pts = np.array(clockwise_sort(self.pts.tolist()))
-
+        
     @njit
     def _mutate(img_size, pts, color, alpha, mutation_chances, mutation_factors, strategy_params):
         pts_chance, color_chance, alpha_chance = mutation_chances
@@ -60,18 +59,20 @@ class Polygon:
         for i, pt in enumerate(pts):
             for j, x in enumerate(pt):
                 if rand() < pts_chance:
-                    pts[i, j] = int(clip(x + normal(scale=pts_factor), 0, img_size[j]))
+                    pts[i, j] = clip(x + normal(scale=pts_factor), 0, img_size[j])
+        '''
         # Add random vertex
         if len(pts) < 6 and rand() < pts_chance:  # Maximum 6 vertex
-            new_x, new_y = int(uniform(minv=0, maxv=img_size[0])), int(uniform(minv=0, maxv=img_size[1]))
-            #pts = np.append(pts, np.array([[new_x, new_y]]), axis=0) TODO renable
+            new_x, new_y = uniform(minv=0, maxv=img_size[0]), uniform(minv=0, maxv=img_size[1])
+            pts = np.append(pts, np.array([[new_x, new_y]]), axis=0) TODO renable
+        '''
         # Mutate color
         for i, c in enumerate(color):
             if rand() < color_chance:
-                color[i] = int(clip(c + normal(scale=color_factor), 0, 255))
+                color[i] = clip(c + normal(scale=color_factor), 0, 255)
         # Mutate alpa
         if rand() < alpha_chance:
-            alpha = int(clip(alpha + normal(scale=alpha_factor), ALPHA_MIN, ALPHA_MAX))
+            alpha = clip(alpha + normal(scale=alpha_factor), ALPHA_MIN, ALPHA_MAX)
         return pts, color, alpha, strategy_params
 
     def dist(self, poly):

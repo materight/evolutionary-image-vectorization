@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.random import randint, rand, normal, choice, shuffle
 
-LENGTH = 20
+LENGTH = 40
 
 class Line:
     def __init__(self, img_size, x):

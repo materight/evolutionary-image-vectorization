@@ -15,7 +15,7 @@ from classes.pso.particle import Particle
 cv.namedWindow('Result')
 
 # Load image
-IMAGE = 'mona_lisa'
+IMAGE = 'unitn'
 ALGORITHM = GA  # GA or PSO
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
@@ -27,13 +27,13 @@ out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{IMAGE}.mp4', fourcc, 30, im
 ga = GA(
     img,
     pop_size=50,
-    n_poly=150,  # Initialize individuals with different numbers of polygons
-    n_vertex=3,
+    n_poly=100,  # Initialize individuals with different numbers of polygons
+    n_vertex=4,
     selection_strategy=selection.TruncatedSelection(.1),  # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
-    replacement_strategy=selection.PlusStrategy(),
+    replacement_strategy=selection.CommaStrategy(),
     crossover_type=Individual.UNIFORM_CROSSOVER,  # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ALIGNED_CROSSOVER
-    evolution_strategies=True,
-    mutation_chances=(1, 1, 1), 
+    evolution_strategies=False,
+    mutation_chances=(0.02, 0.02, 0.02), 
     mutation_factors=(0.2, 0.2, 0.2), # If evolution strategies is true, not used
     niche_size=0  # 0.001, 0
 )
@@ -45,9 +45,9 @@ pso = PSO(
     velocity_update_rule=Particle.STANDARD,  # Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING
     neighborhood_topology=Particle.DISTANCE_TOPOLOGY,  # Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY
     neighborhood_size=3,
-    coeffs=(0.1, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
-    min_distance=10,
-    max_velocity=20
+    coeffs=(0.7, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
+    min_distance=20,
+    max_velocity=50
 )
 
 fbest, favg, fworst = [], [], []

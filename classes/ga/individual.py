@@ -94,9 +94,9 @@ class Individual:
         draw = ImageDraw.Draw(img, 'RGBA')
         for poly in self.polygons:
             if poly.pts.shape[0] == 2:
-                draw.line([tuple(p) for p in np.floor(poly.pts*scale)], fill=(255, 255, 255), width=int(scale))
+                draw.line([tuple(p) for p in np.floor(poly.pts*scale).astype(np.int)], fill=(255, 255, 255), width=int(scale))
             else:
-                draw.polygon([tuple(p) for p in np.floor(poly.pts*scale)], fill=(*poly.color, poly.alpha))
+                draw.polygon([tuple(p) for p in np.floor(poly.pts*scale).astype(np.int)], fill=(*poly.color.astype(np.int), int(poly.alpha)))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img

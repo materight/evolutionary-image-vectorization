@@ -59,8 +59,8 @@ class GA:
                     p1, p2 = min(tournament[0::2], key=lambda p: p.fitness), min(tournament[1::2], key=lambda p: p.fitness) # Disjointed tournaments
                 else:
                     p1, p2 = np.random.choice(self.population, p=selection_probs, size=2, replace=False)
-                newind = Individual.crossover(p1, p2, self.crossover_type)
-                offspring.append(newind)
+            newind = Individual.crossover(p1, p2, self.crossover_type)
+            offspring.append(newind)
 
         # Mutation
         for ind in offspring:
