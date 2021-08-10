@@ -3,7 +3,7 @@ from numpy import random
 from numpy.random import randint, rand
 from numba import njit
 
-from ..utils import clip, clockwise_sort, normal, uniform
+from ..utils import clip, normal, uniform
 
 PTS_RADIUS = 0.2  # Maximm distance radius of generated points in first initialization.
 LINE_LENGTH = 10

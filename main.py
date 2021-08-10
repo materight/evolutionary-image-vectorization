@@ -15,8 +15,8 @@ from classes.pso.particle import Particle
 cv.namedWindow('Result')
 
 # Load image
-IMAGE = 'unitn'
-ALGORITHM = GA  # GA or PSO
+IMAGE = 'mona_lisa'
+ALGORITHM = PSO  # GA or PSO
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
 # Save result as video
@@ -44,9 +44,9 @@ pso = PSO(
     swarm_size=500,
     velocity_update_rule=Particle.STANDARD,  # Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING
     neighborhood_topology=Particle.DISTANCE_TOPOLOGY,  # Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY
-    neighborhood_size=3,
-    coeffs=(0.7, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
-    min_distance=20,
+    neighborhood_size=2,
+    coeffs=(0.5, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
+    min_distance=10,
     max_velocity=50
 )
 
@@ -76,26 +76,19 @@ while True:
     print(f'{gen:04d}) {tot_time:03d}ms, fitness: {fitness}{additional_info}')
 
     # Obtain current best solution
-    target_img = None
     if ALGORITHM is GA:
         best_img = best.draw()
     elif ALGORITHM is PSO:
-        target_img = np.log(pso.problem.target.copy()+1)
-        target_img = cv.normalize(target_img, None, 0, 255, norm_type=cv.NORM_MINMAX)
-        target_img = cv.cvtColor(target_img.astype(np.uint8), cv.COLOR_GRAY2BGR)
         best_img = pso.draw()
-        target_img = np.where(best_img[:, :] == [255, 255, 255], [0, 0, 255], target_img[:, :]).astype(np.uint8)
 
     # Show current best
     best_img = cv.resize(best_img, img.shape[1::-1])
     result = np.hstack([img, best_img])
-    if target_img is not None:
-        result = np.hstack([result, target_img])
-    result = cv.resize(result, None, fx=.6, fy=.6)  # target_img
+    result = cv.resize(result, None, fx=.6, fy=.6)
     cv.imshow('Result', result)
 
     # Save result in video
-    if gen % 5 == 0:
+    if (ALGORITHM is GA and gen % 5 == 0) or (ALGORITHM is PSO):
         out_frame = cv.putText(best_img.copy(), f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.3, (255, 255, 255), 2)
         out.write(out_frame)
 

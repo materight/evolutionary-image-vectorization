@@ -1,25 +1,36 @@
 import cv2 as cv
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
-img = cv.cvtColor(np.array(Image.open(f'samples/starry_night.jpg')), cv.COLOR_RGB2BGR)
-img = cv.resize(img, None, fx=.5, fy=.5)
+LENGTH = 40
+scale = 5
 
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-gray_filtered = cv.bilateralFilter(gray, 9, 80, 50)
+# Compute
+center, rotation = np.array([50, 50]), 0
 
-sigma = 0.33 # 0.33
-v = np.median(gray_filtered)
-# apply automatic Canny edge detection using the computed median
-lower = int(max(0, (1.0 - sigma) * v))
-upper = int(min(255, (1.0 + sigma) * v))
-# Extract image contours
-target = cv.Canny(gray_filtered, lower, upper)
-print(lower, ',', upper)
+while True:
+    # Compute
+    rotation += .01
+    r = LENGTH / 2
+    d = [r * np.cos(rotation), r * np.sin(rotation)]
+    cd = [np.cos(rotation+np.pi/2), np.sin(rotation+np.pi/2)]
+    centerL = center + cd
+    centerR = center - cd
+    
+    coords = np.concatenate([center + d, center - d]) 
+    coordsL = np.concatenate([centerL + d, centerL - d]) 
+    coordsR = np.concatenate([centerR + d, centerR - d]) 
+    
 
-cv.imshow('original', img)
-cv.imshow('gray_filtered1', cv.bilateralFilter(gray, 9, 80, 50))
-cv.imshow('contours1', target)
+    # Draw
+    img = Image.new('RGB', (100*scale, 100*scale), color='black')
+    draw = ImageDraw.Draw(img, 'RGB')
+    draw.line(tuple(coords*scale), fill=(255,255,255), width=2)
+    draw.line(tuple(coordsL*scale), fill=(0,255,0), width=2)
+    draw.line(tuple(coordsR*scale), fill=(255,0,0), width=2)
+    img = np.array(img)
+    img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
 
-cv.waitKey(0)
-cv.destroyAllWindows()
+    # Show
+    cv.imshow('Img', img)
+    cv.waitKey(1)

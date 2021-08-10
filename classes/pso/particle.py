@@ -2,6 +2,7 @@ import numpy as np
 from numpy.random import rand, randint, normal, uniform
 
 from .line import Line
+from ..utils import sample_points, compute_line_coords
 
 FITNESS_POINTS = 5 # How many points extract from each particle line to compute fitness
 
@@ -52,10 +53,10 @@ class Particle:
         # Standard PSO
         w, phi1, phi2 = coeffs # Inertia, cognitive coeff, social coeff
         if velocity_update_rule == Particle.STANDARD:
-            nhood_best = min(neighborhood, key=lambda p: p.fitness).line
+            nhood_best = min(neighborhood, key=lambda p: p.fitness).line if len(neighborhood) > 0 else None
             inertia = w * self.velocity
             cognitive_update = phi1 * rand(self.line.size) * self.personal_best.diff(self.line)
-            social_update = phi2 * rand(self.line.size) * nhood_best.diff(self.line)
+            social_update = phi2 * rand(self.line.size) * nhood_best.diff(self.line) if nhood_best is not None else 0
             self.velocity = inertia + cognitive_update + social_update
             # Fully informed PSO from "Fully Informed Particle Swarm Optimizer: Convergence Analysis"
         elif velocity_update_rule == Particle.FULLY_INFORMED:
@@ -112,11 +113,8 @@ class Particle:
     @property
     def fitness(self):
         if self._fitness is None:
-            p1j, p1i, p2j, p2i = self.line.coords
-            w, h = (p2i - p1i) / FITNESS_POINTS, (p2j - p1j) / FITNESS_POINTS
-            points = [(p1i + w * k, p1j + h * k)  for k in range(0, FITNESS_POINTS)]
-            points = np.floor(points).astype(int)
-
+            pointsL, pointsR = sample_points(self.line.coordsL, FITNESS_POINTS), sample_points(self.line.coordsR, FITNESS_POINTS)
+            pointsL, pointsR = np.rint(pointsL).astype(np.int), np.rint(pointsR).astype(np.int) 
 
             '''            
             import matplotlib.pyplot as plt
@@ -132,5 +130,7 @@ class Particle:
             plt.show()
             '''
             
-            self._fitness = np.sum(self.problem.target[tuple(points.T)].astype(np.int)**2)
+            sumL = np.sum(self.problem.target[tuple(pointsL.T)].astype(np.int))
+            sumR = np.sum(self.problem.target[tuple(pointsR.T)].astype(np.int))
+            self._fitness = sumL + sumR # Image gradient
         return self._fitness

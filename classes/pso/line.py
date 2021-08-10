@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.random import randint, rand, normal, choice, shuffle
+from ..utils import compute_line_coords
 
-LENGTH = 40
+LENGTH = 20
 
 class Line:
     def __init__(self, img_size, x):
@@ -23,7 +24,9 @@ class Line:
     def update(self, velocity):
         self.x += velocity
         # Clip position if outside image borders
-        self.x[:2] = np.clip(self.x[:2], LENGTH//2 + 1, self.img_size - LENGTH//2 - 1) 
+        self.x[:2] = np.clip(self.x[:2], LENGTH//2 + 1, self.img_size - LENGTH//2 - 1)
+        # Keep rotation angle in [0, 2*pi] to avoid numerical instability
+        self.x[2] =  self.x[2] % (np.pi * 2)
 
     def copy(self):
         return Line(self.img_size.copy(), self.x.copy())
@@ -37,10 +40,27 @@ class Line:
         return self.x[2]
 
     @property
-    def coords(self):
+    def filter_coords(self):
         r = LENGTH / 2
         d = [r * np.cos(self.rotation), r * np.sin(self.rotation)] # Compute displacement of line ends from line center
-        return np.concatenate([self.center + d, self.center - d]) 
+        cd = [np.cos(self.rotation+np.pi/2), np.sin(self.rotation+np.pi/2)] # Compute displacement of filters centers from line center (perpendicular to line)
+        centerL, centerR = self.center + cd, self.center - cd
+        coords = np.concatenate([self.center + d, self.center - d])
+        coordsL = np.concatenate([centerL + d, centerL - d])
+        coordsR = np.concatenate([centerR + d, centerR - d])
+        return coords, coordsL, coordsR
+
+    @property
+    def coords(self): # Coordinates of drawn line
+        return compute_line_coords(self.center, self.rotation, LENGTH) 
+
+    @property
+    def coordsL(self): # Coordinates of left filter
+        return compute_line_coords(self.center, self.rotation, LENGTH, -1) 
+
+    @property
+    def coordsR(self): # Coordinates of right filter
+        return compute_line_coords(self.center, self.rotation, LENGTH, +1) 
 
     @property
     def size(self):

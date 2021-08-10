@@ -9,7 +9,7 @@ class PSO:
 
     def __init__(self, target, swarm_size=100, velocity_update_rule=Particle.STANDARD, neighborhood_topology=Particle.STAR_TOPOLOGY, neighborhood_size=5, coeffs=(0.5, 4.1, 0.1), min_distance=5, max_velocity=-1, internal_resolution=-1):
         self.iteration = 0
-        self.problem = Problem(Problem.EDGES, target, internal_resolution)
+        self.problem = Problem(Problem.GRAYSCALE, target, internal_resolution)
         self.velocity_update_rule = velocity_update_rule
         self.neighborhood_topology = neighborhood_topology
         self.neighborhood_size = neighborhood_size
@@ -32,10 +32,10 @@ class PSO:
 
     def draw(self):
         scale = 1/self.problem.scale_factor  # Rescale internal image target to full scale
-        img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='black')
+        img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='white')
         draw = ImageDraw.Draw(img, 'RGB')
         for i, particle in enumerate(self.swarm):
-            draw.line(tuple(particle.line.coords*scale), fill=(255,255,255), width=2*int(scale))
+            draw.line(tuple(particle.line.coords*scale), fill=(0,0,0), width=2*int(scale))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img
