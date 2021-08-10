@@ -15,9 +15,9 @@ from classes.pso.particle import Particle
 cv.namedWindow('Result')
 
 # Load image
-IMAGE = 'mona_lisa'
+IMAGE = 'tour_eiffel'
 ALGORITHM = PSO  # GA or PSO
-INTERPOLATION_SIZE = 10 # Number of interpolated frame to save for PSO results. 1 to disable interpolation
+INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. 1 to disable interpolation
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
 # Save result as video
@@ -46,7 +46,7 @@ pso = PSO(
     velocity_update_rule=Particle.STANDARD,  # Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING
     neighborhood_topology=Particle.DISTANCE_TOPOLOGY,  # Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY
     neighborhood_size=2,
-    coeffs=(0.5, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff, social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
+    coeffs=(0.1, 1.7, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
     min_distance=10,
     max_velocity=50
 )

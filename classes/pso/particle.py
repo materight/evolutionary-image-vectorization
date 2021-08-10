@@ -133,5 +133,5 @@ class Particle:
             
             sumL = np.sum(self.problem.target[tuple(pointsL.T)].astype(np.int))
             sumR = np.sum(self.problem.target[tuple(pointsR.T)].astype(np.int))
-            self._fitness = sumL + sumR # Image gradient
+            self._fitness = np.abs(sumL + sumR) # Image gradient
         return self._fitness
