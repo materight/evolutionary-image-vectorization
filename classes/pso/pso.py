@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw
 
 from ..problem import Problem
 from .particle import Particle
+from ..utils import interpolate
 
 class PSO:
 
@@ -17,11 +18,11 @@ class PSO:
         self.min_distance = min_distance
         self.max_velocity = max_velocity
         self.swarm = []
-        for i in range(swarm_size):
-            self.swarm.append(Particle.random(self.problem, self.max_velocity))
-
+        for idx in range(swarm_size):
+            self.swarm.append(Particle.random(idx, self.problem, self.max_velocity))
 
     def next(self):
+        self.prev_npswarm = self.npswarm
         self.iteration += 1
         fitness = 0
         for i, particle in enumerate(self.swarm):
@@ -29,17 +30,29 @@ class PSO:
             fitness += particle.fitness
         return self.iteration, fitness
 
-
     def draw(self):
-        scale = 1/self.problem.scale_factor  # Rescale internal image target to full scale
-        img = Image.new('RGB', (int(self.problem.target.shape[1]*scale), int(self.problem.target.shape[0]*scale)), color='white')
+        return PSO._draw_npswarm(self.npswarm, self.problem.scale_factor, self.problem.target.shape)
+
+    def draw_interpolated(self, n_points):
+        imgs = []
+        for npswarm in interpolate(self.prev_npswarm, self.npswarm, n_points):
+            imgs.append(PSO._draw_npswarm(npswarm, self.problem.scale_factor, self.problem.target.shape))
+        return imgs
+
+    def _draw_npswarm(npswarm, scale, img_size):
+        scale = 1 / scale  # Rescale internal image target to full scale
+        img = Image.new('RGB', (int(img_size[1]*scale), int(img_size[0]*scale)), color='white')
         draw = ImageDraw.Draw(img, 'RGB')
-        for i, particle in enumerate(self.swarm):
-            draw.line(tuple(particle.line.coords*scale), fill=(0,0,0), width=2*int(scale))
+        for coords in npswarm:
+            draw.line(tuple(coords*scale), fill=(0,0,0), width=int(2*scale))
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img
 
-
     def update_target(self, target):
         self.problem.set_target(target)
+
+    @property
+    def npswarm(self): # Return curent swarm as numpy array
+        return np.stack([p.line.coords for p in self.swarm])
+

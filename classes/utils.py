@@ -39,6 +39,10 @@ def compute_line_coords(center, rotation, length, center_dist=0):
 @njit
 def sample_points(line_coords, n_points):
     p1j, p1i, p2j, p2i = line_coords
-    w, h = (p2i - p1i) / n_points, (p2j - p1j) / n_points
-    points = [(p1i + w * k, p1j + h * k) for k in range(0, n_points)]
-    return points
+    return interpolate(np.array([p1i, p1j]), np.array([p2i, p2j]), n_points)
+
+@njit
+def interpolate(x1, x2, n_points):
+    d = (x2 - x1) / n_points
+    interpolations = [x1 + d * i for i in range(0, n_points)]
+    return interpolations

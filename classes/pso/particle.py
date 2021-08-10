@@ -18,25 +18,26 @@ class Particle:
     RING_TOPOLOGY = 2
     STAR_TOPOLOGY = 3
 
-    def __init__(self, problem, line, velocity):
+    def __init__(self, idx, problem, line, velocity):
+        self.idx = idx
         self.problem = problem
         self.line = line
         self.velocity = velocity
         self._fitness = None
         self.personal_best, self.personal_best_fitness = self.line.copy(), self.fitness
 
-    def random(problem, max_velocity):
+    def random(idx, problem, max_velocity):
         # Init random particle
         line = Line.random(problem)
         velocity = (rand(line.size) * max_velocity/2) - max_velocity/4 # Random values between (-max/4, +max/4)
-        return Particle(problem, line, velocity)
+        return Particle(idx, problem, line, velocity)
 
     def move(self, i, swarm, velocity_update_rule, neighborhood_topology, neighborhood_size, coeffs, min_distance, max_velocity):
         # Compute neighborhood
         # Distance-based
         if neighborhood_topology == Particle.DISTANCE_TOPOLOGY:
-            swarm.sort(key=lambda p: p.line.dist(self.line)) # TODO: optimize neighborhood computation
-            neighborhood = swarm[:neighborhood_size]
+            sorted_swarm = sorted(swarm, key=lambda p: p.line.dist(self.line)) # TODO: optimize neighborhood computation
+            neighborhood = sorted_swarm[:neighborhood_size]
         # Ring
         elif neighborhood_topology == Particle.RING_TOPOLOGY:
             neighborhood_idx = np.arange(i-neighborhood_size//2, i+neighborhood_size//2+1) # Ring topology

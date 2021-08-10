@@ -17,6 +17,7 @@ cv.namedWindow('Result')
 # Load image
 IMAGE = 'mona_lisa'
 ALGORITHM = PSO  # GA or PSO
+INTERPOLATION_SIZE = 10 # Number of interpolated frame to save for PSO results. 1 to disable interpolation
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
 
 # Save result as video
@@ -89,8 +90,11 @@ while True:
 
     # Save result in video
     if (ALGORITHM is GA and gen % 5 == 0) or (ALGORITHM is PSO):
-        out_frame = cv.putText(best_img.copy(), f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.3, (255, 255, 255), 2)
-        out.write(out_frame)
+        if ALGORITHM is GA: frames = [best_img.copy()]
+        elif ALGORITHM is PSO: frames = pso.draw_interpolated(INTERPOLATION_SIZE) # Interpolate frames for better visualization
+        for frame in frames:
+            out_frame = cv.putText(frame, f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.3, (0, 0, 255), 2)
+            out.write(out_frame)
 
     # Key press
     key = cv.waitKey(1) & 0xFF
