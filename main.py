@@ -15,7 +15,7 @@ from classes.pso.particle import Particle
 cv.namedWindow('Result')
 
 # Load image
-IMAGE = 'tour_eiffel'
+IMAGE = 'unitn'
 ALGORITHM = PSO  # GA or PSO
 INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. 1 to disable interpolation
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
@@ -45,7 +45,7 @@ pso = PSO(
     swarm_size=500,
     velocity_update_rule=Particle.STANDARD,  # Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING
     neighborhood_topology=Particle.DISTANCE_TOPOLOGY,  # Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY
-    neighborhood_size=2,
+    neighborhood_size=3,
     coeffs=(0.1, 1.7, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
     min_distance=10,
     max_velocity=50
@@ -97,7 +97,7 @@ while True:
             out.write(out_frame)
 
     # Key press
-    key = cv.waitKey(1) & 0xFF
+    key = cv.waitKey(10) & 0xFF
     if key == ord(' '):
         cv.waitKey(0)
     elif key == ord('q'):

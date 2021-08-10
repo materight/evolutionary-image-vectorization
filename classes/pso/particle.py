@@ -33,11 +33,11 @@ class Particle:
         return Particle(idx, problem, line, velocity)
 
     def move(self, i, swarm, velocity_update_rule, neighborhood_topology, neighborhood_size, coeffs, min_distance, max_velocity):
-        # Compute neighborhood
+        # Compute neighborhood. TODO: exclude itself from neighborhood
         # Distance-based
         if neighborhood_topology == Particle.DISTANCE_TOPOLOGY:
             sorted_swarm = sorted(swarm, key=lambda p: p.line.dist(self.line)) # TODO: optimize neighborhood computation
-            neighborhood = sorted_swarm[:neighborhood_size]
+            neighborhood = sorted_swarm[1:neighborhood_size+1]
         # Ring
         elif neighborhood_topology == Particle.RING_TOPOLOGY:
             neighborhood_idx = np.arange(i-neighborhood_size//2, i+neighborhood_size//2+1) # Ring topology
