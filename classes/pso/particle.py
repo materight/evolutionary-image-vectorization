@@ -54,7 +54,7 @@ class Particle:
         # Standard PSO
         w, phi1, phi2 = coeffs # Inertia, cognitive coeff, social coeff
         if velocity_update_rule == Particle.STANDARD:
-            nhood_best = min(neighborhood, key=lambda p: p.fitness).line if len(neighborhood) > 0 else None
+            nhood_best = max(neighborhood, key=lambda p: p.fitness).line if len(neighborhood) > 0 else None
             inertia = w * self.velocity
             cognitive_update = phi1 * rand(self.line.size) * self.personal_best.diff(self.line)
             social_update = phi2 * rand(self.line.size) * nhood_best.diff(self.line) if nhood_best is not None else 0
@@ -108,7 +108,7 @@ class Particle:
         
 
         # Update personal best
-        if self.fitness < self.personal_best_fitness:
+        if self.fitness > self.personal_best_fitness:
             self.personal_best, self.personal_best_fitness = self.line.copy(), self.fitness
 
     @property
@@ -133,5 +133,5 @@ class Particle:
             
             sumL = np.sum(self.problem.target[tuple(pointsL.T)].astype(np.int))
             sumR = np.sum(self.problem.target[tuple(pointsR.T)].astype(np.int))
-            self._fitness = np.abs(sumL + sumR) # Image gradient
+            self._fitness = np.abs(sumR - sumL) # Image gradient
         return self._fitness

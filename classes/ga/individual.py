@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import zip_longest
 from numpy.random import randint, rand, normal, choice, shuffle
 import cv2 as cv
 from PIL import Image, ImageDraw
@@ -66,19 +67,9 @@ class Individual:
         return Individual(parent1.problem, offspring_polygons)
 
     def mutate(self, next_idx, mutation_chances, mutation_factors):
-        # Muatate polygons
+        # Mutate polygons
         for poly in self.polygons:
             poly.mutate(mutation_chances, mutation_factors)
-        # Replace small polygons (irrelevant to the results) with random ones
-        '''
-        i = 0
-        while i < len(self.polygons):
-            if self.polygons[i].area < 5: 
-                del self.polygons[i]
-                self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex)) # Replace remove polygon
-                next_idx += 1
-            else: i += 1
-        '''
         # Randomly add a new polygon
         if rand() < mutation_chances[0]:
             self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex, self.polygons[-1].strategy_params is not None))
@@ -102,6 +93,16 @@ class Individual:
         return img
 
     def dist(self, individual):
+        dist = 0
+        for poly1, poly2 in zip_longest(self.polygons, individual.polygons):
+            if poly1 is not None and poly2 is not None:
+                dist += poly1.dist(poly2)**2
+            else:
+                dist += poly1.dist(poly2) if poly1 is not None else poly2.dist(poly1) 
+        dist = np.sqrt(dist)
+        return dist
+        '''
+        # OLD, NEAT-based speciation
         excess_count, match_count, disjoint_count = 1, 1, 1
         max_n_poly = max(len(self.polygons), len(individual.polygons)) + 1
         polygons_dist = 0
@@ -126,6 +127,7 @@ class Individual:
                 else:
                     i2 = i2+1
         return (excess_count / max_n_poly) + (disjoint_count / max_n_poly) + (polygons_dist / match_count)  # Inspired by NEAT speciation
+        '''
 
     @property
     def n_poly(self):

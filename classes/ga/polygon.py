@@ -76,14 +76,17 @@ class Polygon:
         return pts, color, alpha, strategy_params
 
     def dist(self, poly):
-        return Polygon._dist(self.pts, self.color, self.alpha, poly.pts, poly.color, poly.alpha, self.img_size)
+        if poly is None: # Maximum possible distance
+            return len(self.pts) + len(self.color) + 1
+        else:
+            return Polygon._dist(self.pts, self.color, self.alpha, poly.pts, poly.color, poly.alpha, self.img_size)
 
     @njit
     def _dist(poly1_pts, poly1_color, poly1_alpha, poly2_pts, poly2_color, poly2_alpha, img_size):
-        pts_dist = (np.abs(poly1_pts - poly2_pts) / img_size).mean()
-        color_dist = (np.abs(poly1_color - poly2_color) / 256).mean()
-        alpha_dist = (np.abs(poly1_alpha - poly2_alpha) / (ALPHA_MAX - ALPHA_MIN))
-        return (pts_dist + color_dist + alpha_dist) / 3
+        pts_dist = ((poly1_pts - poly2_pts) / img_size)**2
+        color_dist = ((poly1_color - poly2_color) / 256)**2
+        alpha_dist = ((poly1_alpha - poly2_alpha) / (ALPHA_MAX - ALPHA_MIN))**2
+        return np.sqrt(np.sum(pts_dist) + np.sum(color_dist) + np.sum(alpha_dist)) # Normalized euclidean distance
 
     @property
     def n_vertex(self):

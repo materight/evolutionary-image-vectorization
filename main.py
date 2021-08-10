@@ -15,7 +15,7 @@ from classes.pso.particle import Particle
 cv.namedWindow('Result')
 
 # Load image
-IMAGE = 'unitn'
+IMAGE = 'mona_lisa'
 ALGORITHM = PSO  # GA or PSO
 INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. 1 to disable interpolation
 img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
