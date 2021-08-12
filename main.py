@@ -42,7 +42,8 @@ ga = GA(
 # Particle swarm optimization
 pso = PSO(
     img,
-    swarm_size=500,
+    swarm_size=200,
+    line_length=40,
     velocity_update_rule=Particle.STANDARD,  # Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING
     neighborhood_topology=Particle.DISTANCE_TOPOLOGY,  # Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY
     neighborhood_size=3,

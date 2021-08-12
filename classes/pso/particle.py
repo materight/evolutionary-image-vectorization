@@ -18,19 +18,19 @@ class Particle:
     RING_TOPOLOGY = 2
     STAR_TOPOLOGY = 3
 
-    def __init__(self, idx, problem, line, velocity):
-        self.idx = idx
+    def __init__(self, problem, idx, line, velocity):
         self.problem = problem
+        self.idx = idx
         self.line = line
         self.velocity = velocity
         self._fitness = None
         self.personal_best, self.personal_best_fitness = self.line.copy(), self.fitness
 
-    def random(idx, problem, max_velocity):
+    def random(problem, idx, line_length, max_velocity):
         # Init random particle
-        line = Line.random(problem)
+        line = Line.random(problem, line_length)
         velocity = (rand(line.size) * max_velocity/2) - max_velocity/4 # Random values between (-max/4, +max/4)
-        return Particle(idx, problem, line, velocity)
+        return Particle(problem, idx, line, velocity)
 
     def move(self, i, swarm, velocity_update_rule, neighborhood_topology, neighborhood_size, coeffs, min_distance, max_velocity):
         # Compute neighborhood. TODO: exclude itself from neighborhood
