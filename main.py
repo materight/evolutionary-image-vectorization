@@ -12,7 +12,6 @@ from classes.pso.pso import PSO
 from classes.pso.particle import Particle
 
 # TODO:
-# - Fix self-adaptive strategy
 # - finish speciation for GA
 # - complete support for videos
 # - complete benchmark and run experiments (save plots for speciation and fitness)
@@ -35,14 +34,14 @@ out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{IMAGE}.mp4', fourcc, 30, im
 ga = GA(
     img,
     pop_size=100,
-    n_poly=100,  # Initialize individuals with different numbers of polygons
+    n_poly=300,             
     n_vertex=3,
-    selection_strategy=selection.TruncatedSelection(.1),  # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
+    selection_strategy=selection.TruncatedSelection(.1), # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
     replacement_strategy=replacement.CommaReplacement(), # replacement.CommaReplacement(), replacement.PlusReplacement()
-    crossover_type=Individual.UNIFORM_CROSSOVER,  # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ARITHMETIC_CROSSOVER, Individual.ALIGNED_CROSSOVER
-    self_adaptive=True,
-    mutation_chances=(0.02, 0.02, 0.02), 
-    mutation_factors=(0.2, 0.2, 0.2), # If evolution strategies is true, not used
+    crossover_type=Individual.UNIFORM_CROSSOVER,         # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ARITHMETIC_CROSSOVER, Individual.ALIGNED_CROSSOVER
+    self_adaptive=True,                                  # Self-adaptetion of mutation step-sizes
+    mutation_rates=(0.02, 0.02, 0.02),                   # If self_adaptive is True, not used
+    mutation_step_sizes=(0.2, 0.2, 0.2),                 # If self_adaptive is True, not used
     niche_size=0  # 0.001, 0
 )
 
@@ -61,60 +60,61 @@ pso = PSO(
 
 fbest, favg, fworst = [], [], []
 diversities = []
-while True:
-    start_time = time.time()
+try: # Press ctrl+c to exit loop
+    while True:
+        start_time = time.time()
 
-    # Compute next generation
-    additional_info = ''
-    if ALGORITHM is GA:
-        gen, population, diversity = ga.next()
-        best = population[0]
-        additional_info = f' ({best.fitness_perc * 100:.2f}%), polygons: {best.n_poly}'
-        fitness = best.fitness
-        fbest.append(best.fitness)
-        favg.append(np.mean([i.fitness for i in population]))
-        fworst.append(population[-1].fitness)
-        if diversity is not None:
-            diversities.append(diversity)
-            additional_info += f', diversity: {diversity}'
-    elif ALGORITHM is PSO:
-        gen, fitness = pso.next()
-        fbest.append(fitness)
+        # Compute next generation
+        additional_info = ''
+        if ALGORITHM is GA:
+            gen, population, diversity = ga.next()
+            best = population[0]
+            additional_info = f' ({best.fitness_perc * 100:.2f}%), polygons: {best.n_poly}'
+            fitness = best.fitness
+            fbest.append(best.fitness)
+            favg.append(np.mean([i.fitness for i in population]))
+            fworst.append(population[-1].fitness)
+            if diversity is not None:
+                diversities.append(diversity)
+                additional_info += f', diversity: {diversity}'
+        elif ALGORITHM is PSO:
+            gen, fitness = pso.next()
+            fbest.append(fitness)
 
-    # Print and save result
-    tot_time = round((time.time() - start_time)*1000)
-    print(f'{gen:04d}) {tot_time:03d}ms, fitness: {fitness:.2f}{additional_info}')
+        # Print and save result
+        tot_time = round((time.time() - start_time)*1000)
+        print(f'{gen:04d}) {tot_time:03d}ms, fitness: {fitness:.2f}{additional_info}')
 
-    # Obtain current best solution
-    if ALGORITHM is GA:
-        best_img = best.draw()
-    elif ALGORITHM is PSO:
-        best_img = pso.draw()
+        # Obtain current best solution
+        if ALGORITHM is GA:
+            best_img = best.draw()
+        elif ALGORITHM is PSO:
+            best_img = pso.draw()
 
-    # Show current best
-    best_img = cv.resize(best_img, img.shape[1::-1])
-    result = np.hstack([img, best_img])
-    result = cv.resize(result, None, fx=.6, fy=.6)
-    cv.imshow('Result', result)
+        # Show current best
+        best_img = cv.resize(best_img, img.shape[1::-1])
+        result = np.hstack([img, best_img])
+        result = cv.resize(result, None, fx=.6, fy=.6)
+        cv.imshow('Result', result)
 
-    # Save result in video
-    if (ALGORITHM is GA and gen % 10 == 0) or (ALGORITHM is PSO):
-        if ALGORITHM is GA: frames = [best_img.copy()]
-        elif ALGORITHM is PSO: frames = pso.draw_interpolated(INTERPOLATION_SIZE) # Interpolate frames for better visualization
-        for frame in frames:
-            out_frame = cv.putText(frame, f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.4, (0, 0, 255), 2)
-            out.write(out_frame)
+        # Save result in video
+        if (ALGORITHM is GA and gen % 10 == 0) or (ALGORITHM is PSO):
+            if ALGORITHM is GA: frames = [best_img.copy()]
+            elif ALGORITHM is PSO: frames = pso.draw_interpolated(INTERPOLATION_SIZE) # Interpolate frames for better visualization
+            for frame in frames:
+                out_frame = cv.putText(frame, f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.4, (0, 0, 255), 2)
+                out.write(out_frame)
 
-    # Key press
-    key = cv.waitKey(10) & 0xFF
-    if key == ord(' '):
-        cv.waitKey(0)
-    elif key == ord('q'):
-        break
+        # Key press
+        key = cv.waitKey(1) & 0xFF
+        if key == ord(' '):
+            cv.waitKey(0)
 
-    # Update the target, in case the algorithm is in real-time
-    # ga.update_target(img)
-    # pso.update_target(img)
+        # Update the target, in case the algorithm is in real-time
+        # ga.update_target(img)
+        # pso.update_target(img)
+except KeyboardInterrupt:
+    pass
 
 cv.destroyAllWindows()
 out.release()

@@ -6,7 +6,7 @@ from numba import njit
 from ..utils import clip, normal, uniform
 
 PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
-ALPHA_MIN, ALPHA_MAX = 0, 256
+ALPHA_MIN, ALPHA_MAX = 20, 220
 
 
 class Polygon:
@@ -29,45 +29,42 @@ class Polygon:
         color = rand(3) * 256  # RGB
         alpha = rand() * (ALPHA_MAX - ALPHA_MIN) + ALPHA_MIN  # Alpha channel
         # Init ES parameters
-        strategy_params = rand(3)/100 if self_adaptive else None
+        strategy_params = rand(pts.size+color.size+1)*.01 if self_adaptive else None
         return Polygon(idx, img_size, pts, color, alpha, strategy_params)
 
     def mutate(self, mutation_chances, mutation_factors):
         self.pts, self.color, self.alpha, self.strategy_params = Polygon._mutate(self.img_size, self.pts, self.color, self.alpha, mutation_chances, mutation_factors, self.strategy_params)
-        
+
     @njit
     def _mutate(img_size, pts, color, alpha, mutation_chances, mutation_factors, strategy_params):
         # Genetic Algorithm
         if strategy_params is None:
             pts_chance, color_chance, alpha_chance = mutation_chances
-            pts_factor = (img_size.max() * mutation_factors[0]) / 4
-            color_factor = (255 * mutation_factors[1]) / 4
+            pts_factor = np.full(pts.size, (img_size.min() * mutation_factors[0]) / 4)
+            color_factor = np.full(color.size, (255 * mutation_factors[1]) / 4)
             alpha_factor = ((ALPHA_MAX - ALPHA_MIN) * mutation_factors[2]) / 4
         # Evolution Strategies
         else:
             pts_chance, color_chance, alpha_chance = (1, 1, 1)
-            n = pts.size + color.size + 1 # Total size of genotype 
+            n = len(strategy_params)
             tau, tau1 = 1/np.sqrt(2*np.sqrt(n)), 1/np.sqrt(2*n) 
             epsilon = 0.00001
             for i, sigma in enumerate(strategy_params):
-                strategy_params[i] = sigma * np.exp(tau * normal() + tau1 * normal())
-                if strategy_params[i] < epsilon: strategy_params[i] = epsilon
-            pts_factor = img_size.max() * strategy_params[0]
-            color_factor = 255  * strategy_params[1]
-            alpha_factor = (ALPHA_MAX - ALPHA_MIN) * strategy_params[2]
-            #print('ES:', int(pts_factor), int(color_factor), int(alpha_factor))
-            print('ES:', strategy_params[0], strategy_params[1], strategy_params[2])
+                strategy_params[i] = clip(sigma * np.exp(tau * normal() + tau1 * normal()), epsilon, 1)
+            pts_factor = (img_size.min() * strategy_params[0:pts.size]) / 4
+            color_factor = (255  * strategy_params[pts.size:pts.size+color.size]) / 4
+            alpha_factor = ((ALPHA_MAX - ALPHA_MIN) * strategy_params[-1]) / 4
         # Mutate points
         for i, pt in enumerate(pts):
             for j, x in enumerate(pt):
-                if rand() < pts_chance:
-                    pts[i, j] = clip(x + normal(scale=pts_factor), 0, img_size[j])
+                if rand() <= pts_chance:
+                    pts[i, j] = clip(x + normal(scale=pts_factor[i*pts.shape[1]+j]), 0, img_size[j])
         # Mutate color
         for i, c in enumerate(color):
-            if rand() < color_chance:
-                color[i] = clip(c + normal(scale=color_factor), 0, 255)
+            if rand() <= color_chance:
+                color[i] = clip(c + normal(scale=color_factor[i]), 0, 255)
         # Mutate alpa
-        if rand() < alpha_chance:
+        if rand() <= alpha_chance:
             alpha = clip(alpha + normal(scale=alpha_factor), ALPHA_MIN, ALPHA_MAX)
         return pts, color, alpha, strategy_params
 

@@ -10,7 +10,7 @@ from .individual import Individual
 class GA:
     
 
-    def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_strategy=selection.TruncatedSelection(0.1), replacement_strategy=replacement.CommaReplacement(), crossover_type=Individual.UNIFORM_CROSSOVER, self_adaptive=False, mutation_chances=(0.01, 0.01, 0.01), mutation_factors=(0.2, 0.2, 0.2), niche_size=0.1, internal_resolution=75):
+    def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_strategy=selection.TruncatedSelection(0.1), replacement_strategy=replacement.CommaReplacement(), crossover_type=Individual.UNIFORM_CROSSOVER, self_adaptive=False, mutation_rates=(0.01, 0.01, 0.01), mutation_step_sizes=(0.2, 0.2, 0.2), niche_size=0.1, internal_resolution=75):
         self.generation = 0
         self.problem = Problem(Problem.RGB, target, internal_resolution)
         self.pop_size = pop_size
@@ -20,8 +20,8 @@ class GA:
         self.replacement_strategy = replacement_strategy
         self.crossover_type = crossover_type
         self.self_adaptive = self_adaptive
-        self.mutation_chances = mutation_chances
-        self.mutation_factors = mutation_factors
+        self.mutation_rates = mutation_rates
+        self.mutation_step_sizes = mutation_step_sizes
         self.niche_size = niche_size
         self.next_idx = 0
         self.population = []
@@ -51,21 +51,21 @@ class GA:
 
         # Crossover
         offspring = []
-        for i in range(0, self.pop_size):
-            if self.self_adaptive:
-                newind = np.random.choice(self.population, p=selection_probs, size=1, replace=False)[0].copy() # No crossover with ES
+        for i in range(0, self.pop_size):         
+            if type(self.selection_strategy) is selection.TournamentSelection:
+                tournament = np.random.choice(self.population, size=self.selection_strategy.k*2, replace=False)
+                p1, p2 = min(tournament[0::2], key=lambda p: p.fitness), min(tournament[1::2], key=lambda p: p.fitness) # Disjointed tournaments
             else:
-                if type(self.selection_strategy) is selection.TournamentSelection:
-                    tournament = np.random.choice(self.population, size=self.selection_strategy.k*2, replace=False)
-                    p1, p2 = min(tournament[0::2], key=lambda p: p.fitness), min(tournament[1::2], key=lambda p: p.fitness) # Disjointed tournaments
-                else:
-                    p1, p2 = np.random.choice(self.population, p=selection_probs, size=2, replace=False)
-                newind = Individual.crossover(p1, p2, self.crossover_type)
+                p1, p2 = np.random.choice(self.population, p=selection_probs, size=2, replace=False)
+            newind = Individual.crossover(p1, p2, self.crossover_type)
             offspring.append(newind)
 
         # Mutation
         for ind in offspring:
-            self.next_idx = ind.mutate(self.next_idx, self.mutation_chances, self.mutation_factors)
+            self.next_idx = ind.mutate(self.next_idx, self.mutation_rates, self.mutation_step_sizes)
+
+        a = np.array([i.msp for i in offspring])
+        print(f'mean sp: {a.mean():.2f}')
 
         # Replace old population
         if type(self.replacement_strategy) is replacement.CommaReplacement:

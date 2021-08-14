@@ -78,6 +78,7 @@ class Individual:
         # Mutate polygons
         for poly in self.polygons:
             poly.mutate(mutation_chances, mutation_factors)
+        self.msp = [p.strategy_params.copy() for p in self.polygons]
         # Randomly add a new polygon
         '''
         if rand() < mutation_chances[0]:
