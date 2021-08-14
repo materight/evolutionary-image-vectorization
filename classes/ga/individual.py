@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import zip_longest
+from numpy.lib.function_base import average
 from numpy.random import randint, rand, normal, choice, shuffle
 import cv2 as cv
 from PIL import Image, ImageDraw
@@ -12,17 +13,21 @@ class Individual:
 
     ONE_POINT_CROSSOVER = 1
     UNIFORM_CROSSOVER = 2
-    ALIGNED_CROSSOVER = 3
+    ARITHMETIC_CROSSOVER = 3
+    ALIGNED_CROSSOVER = 4
+
 
     def __init__(self, problem, polygons):
         self.problem = problem
         self.polygons = polygons
         self._fitness = None
 
-    def random(problem, next_idx, n_poly, n_vertex, evolution_strategies):
+
+    def random(problem, next_idx, n_poly, n_vertex, self_adaptive):
         # Init random individual
-        polygons = [Polygon.random(next_idx + idx, problem, n_vertex, evolution_strategies) for idx in range(n_poly)]
+        polygons = [Polygon.random(next_idx + idx, problem, n_vertex, self_adaptive) for idx in range(n_poly)]
         return Individual(problem, polygons)
+
 
     def crossover(parent1, parent2, kind):
         polygons1, polygons2 = [p.copy() for p in parent1.polygons], [p.copy() for p in parent2.polygons]
@@ -31,6 +36,8 @@ class Individual:
             offspring_polygons = polygons1[:split_idx] + polygons2[split_idx:]
         elif kind == Individual.UNIFORM_CROSSOVER:
             offspring_polygons = [polygons1[i] if rand() < 0.5 else polygons2[i] for i in range(min(parent1.n_poly, parent2.n_poly))]  # Common polygons
+        elif kind == Individual.ARITHMETIC_CROSSOVER:
+            offspring_polygons = [Polygon.average(polygons1[i], polygons2[i]) for i in range(min(parent1.n_poly, parent2.n_poly))]
         elif kind == Individual.ALIGNED_CROSSOVER:
             offspring_polygons = []
             i1, i2 = 0, 0
@@ -66,18 +73,22 @@ class Individual:
         # Create new individual
         return Individual(parent1.problem, offspring_polygons)
 
+
     def mutate(self, next_idx, mutation_chances, mutation_factors):
         # Mutate polygons
         for poly in self.polygons:
             poly.mutate(mutation_chances, mutation_factors)
         # Randomly add a new polygon
+        '''
         if rand() < mutation_chances[0]:
             self.polygons.append(Polygon.random(next_idx, self.problem, self.polygons[-1].n_vertex, self.polygons[-1].strategy_params is not None))
             next_idx += 1
-        # Reset fitness
+        '''
+        # Reset fitness of mutated individual
         self._fitness = None
-        # Return true if the current historcial marking has been used
+        # Return the next historical marking value
         return next_idx
+
 
     def draw(self, full_res=True):
         scale = 1/self.problem.scale_factor if full_res else 1  # Rescale internal image target to full scale
@@ -91,6 +102,7 @@ class Individual:
         img = np.array(img)
         img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
         return img
+
 
     def dist(self, individual):
         dist = 0
@@ -129,16 +141,23 @@ class Individual:
         return (excess_count / max_n_poly) + (disjoint_count / max_n_poly) + (polygons_dist / match_count)  # Inspired by NEAT speciation
         '''
 
+
     @property
     def n_poly(self):
         return len(self.polygons)
 
+
     @property
     def fitness(self):
         if self._fitness is None:
-            if self.problem.problem_type == Problem.RGB:
-                self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.problem.target).astype(np.int)**2)
-            else:
-                image = cv.cvtColor(self.draw(full_res=False), cv.COLOR_BGR2GRAY)
-                self._fitness = np.sum(self.problem.target[image > 0].astype(np.int)**2)
+            self._fitness = np.sum(cv.absdiff(self.draw(full_res=False), self.problem.target).astype(np.int)**2) / self.problem.target.size
         return self._fitness
+
+
+    @property
+    def fitness_perc(self):
+        return 1 - self.fitness / 256**2 # Fitness value over maximum possible fitness
+
+
+    def copy(self):
+        return Individual(self.problem, [p.copy() for p in self.polygons])        

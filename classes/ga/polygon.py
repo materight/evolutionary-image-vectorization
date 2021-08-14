@@ -5,9 +5,8 @@ from numba import njit
 
 from ..utils import clip, normal, uniform
 
-PTS_RADIUS = 0.2  # Maximm distance radius of generated points in first initialization.
-LINE_LENGTH = 10
-ALPHA_MIN, ALPHA_MAX = 20, 220
+PTS_RADIUS = 0.3  # Maximm distance radius of generated points in first initialization.
+ALPHA_MIN, ALPHA_MAX = 0, 256
 
 
 class Polygon:
@@ -19,7 +18,7 @@ class Polygon:
         self.alpha = alpha
         self.strategy_params = strategy_params
 
-    def random(idx, problem, n_vertex, evolution_strategies):
+    def random(idx, problem, n_vertex, self_adaptive):
         # Initialize the polygon's points randomly
         img_size = np.array(problem.target.shape[:2][::-1])
         pos = rand(2) * img_size  # Generale position of the polygon, to which start creating points
@@ -30,7 +29,7 @@ class Polygon:
         color = rand(3) * 256  # RGB
         alpha = rand() * (ALPHA_MAX - ALPHA_MIN) + ALPHA_MIN  # Alpha channel
         # Init ES parameters
-        strategy_params = rand(3) if evolution_strategies else None
+        strategy_params = rand(3)/100 if self_adaptive else None
         return Polygon(idx, img_size, pts, color, alpha, strategy_params)
 
     def mutate(self, mutation_chances, mutation_factors):
@@ -38,34 +37,31 @@ class Polygon:
         
     @njit
     def _mutate(img_size, pts, color, alpha, mutation_chances, mutation_factors, strategy_params):
-        pts_chance, color_chance, alpha_chance = mutation_chances
+        # Genetic Algorithm
         if strategy_params is None:
-            # Genetic algorithm
+            pts_chance, color_chance, alpha_chance = mutation_chances
             pts_factor = (img_size.max() * mutation_factors[0]) / 4
             color_factor = (255 * mutation_factors[1]) / 4
             alpha_factor = ((ALPHA_MAX - ALPHA_MIN) * mutation_factors[2]) / 4
+        # Evolution Strategies
         else:
-            # Evolution strategies
+            pts_chance, color_chance, alpha_chance = (1, 1, 1)
             n = pts.size + color.size + 1 # Total size of genotype 
             tau, tau1 = 1/np.sqrt(2*np.sqrt(n)), 1/np.sqrt(2*n) 
-            epsilon = 0.0001
+            epsilon = 0.00001
             for i, sigma in enumerate(strategy_params):
                 strategy_params[i] = sigma * np.exp(tau * normal() + tau1 * normal())
                 if strategy_params[i] < epsilon: strategy_params[i] = epsilon
             pts_factor = img_size.max() * strategy_params[0]
             color_factor = 255  * strategy_params[1]
             alpha_factor = (ALPHA_MAX - ALPHA_MIN) * strategy_params[2]
+            #print('ES:', int(pts_factor), int(color_factor), int(alpha_factor))
+            print('ES:', strategy_params[0], strategy_params[1], strategy_params[2])
         # Mutate points
         for i, pt in enumerate(pts):
             for j, x in enumerate(pt):
                 if rand() < pts_chance:
                     pts[i, j] = clip(x + normal(scale=pts_factor), 0, img_size[j])
-        '''
-        # Add random vertex
-        if len(pts) < 6 and rand() < pts_chance:  # Maximum 6 vertex
-            new_x, new_y = uniform(minv=0, maxv=img_size[0]), uniform(minv=0, maxv=img_size[1])
-            pts = np.append(pts, np.array([[new_x, new_y]]), axis=0) TODO renable
-        '''
         # Mutate color
         for i, c in enumerate(color):
             if rand() < color_chance:
@@ -74,6 +70,15 @@ class Polygon:
         if rand() < alpha_chance:
             alpha = clip(alpha + normal(scale=alpha_factor), ALPHA_MIN, ALPHA_MAX)
         return pts, color, alpha, strategy_params
+
+
+    def average(poly1, poly2):
+        avg_pts = (poly1.pts + poly2.pts) / 2
+        avg_color = (poly1.color + poly2.color) / 2
+        avg_alpha = (poly1.alpha + poly2.alpha) / 2
+        avg_strategy_params = (poly1.strategy_params + poly2.strategy_params) / 2 if poly1.strategy_params is not None else None
+        return Polygon(poly1.idx, poly1.img_size.copy(), avg_pts, avg_color, avg_alpha, avg_strategy_params)
+
 
     def dist(self, poly):
         if poly is None: # Maximum possible distance
@@ -108,4 +113,4 @@ class Polygon:
         return int(abs(area / 2.0))  # Return absolute value
 
     def copy(self):
-        return Polygon(self.idx, self.img_size.copy(), self.pts.copy(), self.color.copy(), self.alpha, self.strategy_params)
+        return Polygon(self.idx, self.img_size.copy(), self.pts.copy(), self.color.copy(), self.alpha, self.strategy_params.copy() if self.strategy_params is not None else None)

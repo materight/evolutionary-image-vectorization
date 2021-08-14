@@ -6,6 +6,7 @@ class Problem:
     RGB = 1
     GRAYSCALE = 2
     
+    
     def __init__(self, problem_type, target, internal_resolution):
         self.problem_type = problem_type
         self.scale_factor = internal_resolution / min(target.shape[:2]) if internal_resolution > 0 else 1
