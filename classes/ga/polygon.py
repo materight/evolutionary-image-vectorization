@@ -77,18 +77,22 @@ class Polygon:
         return Polygon(poly1.idx, poly1.img_size.copy(), avg_pts, avg_color, avg_alpha, avg_strategy_params)
 
 
-    def dist(self, poly):
-        if poly is None: # Maximum possible distance
-            return len(self.pts) + len(self.color) + 1
-        else:
-            return Polygon._dist(self.pts, self.color, self.alpha, poly.pts, poly.color, poly.alpha, self.img_size)
+    def dist(poly1, poly2):
+        # If one is None, return maximum possible distance
+        if poly1 is None:
+            return np.sqrt(len(poly2.pts) + len(poly2.color) + 1) 
+        if poly2 is None:
+            return np.sqrt(len(poly1.pts) + len(poly1.color) + 1)
+        if poly1 is not None and poly2 is not None:
+            return Polygon._dist(poly1.pts, poly1.color, poly1.alpha, poly2.pts, poly2.color, poly2.alpha, poly1.img_size)
+        
 
     @njit
     def _dist(poly1_pts, poly1_color, poly1_alpha, poly2_pts, poly2_color, poly2_alpha, img_size):
         pts_dist = ((poly1_pts - poly2_pts) / img_size)**2
         color_dist = ((poly1_color - poly2_color) / 256)**2
         alpha_dist = ((poly1_alpha - poly2_alpha) / (ALPHA_MAX - ALPHA_MIN))**2
-        return np.sqrt(np.sum(pts_dist) + np.sum(color_dist) + np.sum(alpha_dist)) # Normalized euclidean distance
+        return np.sqrt(np.sum(pts_dist) + np.sum(color_dist) + alpha_dist) # Normalized euclidean distance
 
     @property
     def n_vertex(self):

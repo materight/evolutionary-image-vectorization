@@ -12,7 +12,6 @@ from classes.pso.pso import PSO
 from classes.pso.particle import Particle
 
 # TODO:
-# - finish speciation for GA
 # - complete support for videos
 # - complete benchmark and run experiments (save plots for speciation and fitness)
 # - save images to add to paper
@@ -20,29 +19,39 @@ from classes.pso.particle import Particle
 # Set windows properties
 cv.namedWindow('Result')
 
-# Load image
-IMAGE = 'mona_lisa'
+# Params
+SAMPLE = 'mona_lisa.jpg'
 ALGORITHM = GA  # GA or PSO
 INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. 1 to disable interpolation
-img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
+sample_name, sample_ext = SAMPLE.split('.')
 
-# Save result as video
+# Load image or video
+if sample_ext in ['jpg', 'jpeg', 'png']:
+    isvideo = False
+    img = cv.imread(f'samples/{SAMPLE}') #cv.cvtColor(np.array(Image.open(f'samples/{SAMPLE}')), cv.COLOR_RGB2BGR)
+elif sample_ext in ['mp4']:
+    isvideo = True
+    video = cv.VideoCapture(f'samples/{SAMPLE}')
+    _, img = video.read()
+else:
+    raise ValueError(f'File extension "{sample_ext}" not supported')
+
+# Prepare to save result as video
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
-out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{IMAGE}.mp4', fourcc, 30, img.shape[:2][::-1])
+out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{sample_name}.mp4', fourcc, 30, img.shape[:2][::-1])
 
 # Genetic algorithm
 ga = GA(
     img,
     pop_size=100,
-    n_poly=300,             
+    n_poly=100,             
     n_vertex=3,
     selection_strategy=selection.TruncatedSelection(.1), # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
-    replacement_strategy=replacement.CommaReplacement(), # replacement.CommaReplacement(), replacement.PlusReplacement()
-    crossover_type=Individual.UNIFORM_CROSSOVER,         # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ARITHMETIC_CROSSOVER, Individual.ALIGNED_CROSSOVER
-    self_adaptive=True,                                  # Self-adaptetion of mutation step-sizes
+    replacement_strategy=replacement.CrowdingReplacement(4), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
+    crossover_type=Individual.UNIFORM_CROSSOVER,         # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ARITHMETIC_CROSSOVER
+    self_adaptive=False,                                  # Self-adaptetion of mutation step-sizes
     mutation_rates=(0.02, 0.02, 0.02),                   # If self_adaptive is True, not used
-    mutation_step_sizes=(0.2, 0.2, 0.2),                 # If self_adaptive is True, not used
-    niche_size=0  # 0.001, 0
+    mutation_step_sizes=(0.2, 0.2, 0.2)                 # If self_adaptive is True, not used
 )
 
 # Particle swarm optimization
@@ -67,16 +76,17 @@ try: # Press ctrl+c to exit loop
         # Compute next generation
         additional_info = ''
         if ALGORITHM is GA:
-            gen, population, diversity = ga.next()
+            gen, population = ga.next()
             best = population[0]
             additional_info = f' ({best.fitness_perc * 100:.2f}%), polygons: {best.n_poly}'
             fitness = best.fitness
             fbest.append(best.fitness)
             favg.append(np.mean([i.fitness for i in population]))
             fworst.append(population[-1].fitness)
-            if diversity is not None:
+            if gen % 15 == 0: # Measure diversity every 15 generations
+                diversity = ga.diversity()
                 diversities.append(diversity)
-                additional_info += f', diversity: {diversity}'
+                additional_info += f', diversity: {int(diversity)}'
         elif ALGORITHM is PSO:
             gen, fitness = pso.next()
             fbest.append(fitness)
@@ -110,9 +120,12 @@ try: # Press ctrl+c to exit loop
         if key == ord(' '):
             cv.waitKey(0)
 
-        # Update the target, in case the algorithm is in real-time
-        # ga.update_target(img)
-        # pso.update_target(img)
+        # Update the target, in case of video input
+        if isvideo and gen % 1000 == 0: # Optimize over new frame every 1000 generations
+            ret, img = video.read()
+            if ALGORITHM is GA: ga.update_target(img)
+            elif ALGORITHM is PSO: pso.update_target(img)
+        
 except KeyboardInterrupt:
     pass
 
