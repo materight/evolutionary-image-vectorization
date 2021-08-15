@@ -14,7 +14,15 @@ from classes.pso.particle import Particle
 # TODO:
 # - complete support for videos
 # - complete benchmark and run experiments (save plots for speciation and fitness)
-# - save images to add to paper
+# - save images to add to paper 
+
+# TODO:
+# Images to add to the report:
+# - Resulting images with polygons and litnes
+# - Plots of fitnesses over generations as a comparison of convergence speed of different methods
+# - Pareto front of number_vertices vs fitness
+# - Scatter and line plot of diversity (with and without crowding)
+
 
 # Set windows properties
 cv.namedWindow('Result')
