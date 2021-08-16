@@ -8,28 +8,38 @@ import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 
+from classes.operators import selection, replacement
 from classes.ga.ga import GA
+from classes.ga.individual import Individual
 from classes.pso.pso import PSO
+from classes.pso.particle import Particle
 
 RESULTS_BASE_PATH = 'results/benchmark'
-IMAGE = 'mona_lisa'
+SAMPLE = 'mona_lisa.jpg'
 ALGORITHM = GA # GA or PSO
-MAX_GENERATIONS = 500
+MAX_GENERATIONS = 1000
 
 ALGORITHM_PARAMS = {
     GA: dict(
         pop_size=[50, 100],
-        n_poly=[50, 100],
-        n_vertex=[3, 5],
-        selection_cutoff=[.1, .2],
-        mutation_chances=[(0.01, 0.01, 0.01)],
+        n_poly=[50, 100, 200],
+        n_vertex=[3, 4, 5, 6],
+        selection_strategy=[selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10), selection.TruncatedSelection(.2)],
+        replacement_strategy=[replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(2), replacement.CrowdingReplacement(5)],
+        crossover_type=[Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ARITHMETIC_CROSSOVER],
+        self_adaptive=[False, True],
+        mutation_chances=[(0.02, 0.02, 0.02)],
         mutation_factors=[(0.2, 0.2, 0.2)]
     ),
     PSO: dict(
         swarm_size=[100, 300],
-        neighborhood_size=[5],
-        coeffs=[(0.5, 4.1, 0.1)],
-        min_distance=[0]
+        line_length=[20],
+        velocity_update_rule=[Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING],
+        neighborhood_topology=[Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY],
+        neighborhood_size=[3],
+        coeffs=[(0.1, 1.7, 1.5), (0.7, 1.5, 1.5)],
+        min_distance=[5, 10],
+        max_velocity=[10]
     ),
 }
 
@@ -43,7 +53,7 @@ keys, values = zip(*ALGORITHM_PARAMS[ALGORITHM].items())
 params_list = [dict(zip(keys, v)) for v in itertools.product(*values)]
 
 # Load image
-img = cv.cvtColor(np.array(Image.open(f'samples/{IMAGE}.jpg')), cv.COLOR_RGB2BGR)
+img = cv.cvtColor(np.array(Image.open(f'samples/{SAMPLE}')), cv.COLOR_RGB2BGR)
 
 # Run a single instance of the selected algoritm
 def run(run_idx, params):

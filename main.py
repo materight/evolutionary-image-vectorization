@@ -12,7 +12,6 @@ from classes.pso.pso import PSO
 from classes.pso.particle import Particle
 
 # TODO:
-# - complete support for videos
 # - complete benchmark and run experiments (save plots for speciation and fitness)
 # - save images to add to paper 
 
@@ -28,34 +27,39 @@ from classes.pso.particle import Particle
 cv.namedWindow('Result')
 
 # Params
-SAMPLE = 'mona_lisa.jpg'
+SAMPLE = 'parachute.mp4'
 ALGORITHM = GA  # GA or PSO
-INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. 1 to disable interpolation
+INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
+VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 1000, 200 # Number of generations to run for the first and for the other frames, respectively 
 sample_name, sample_ext = SAMPLE.split('.')
 
 # Load image or video
 if sample_ext in ['jpg', 'jpeg', 'png']:
     isvideo = False
     img = cv.imread(f'samples/{SAMPLE}') #cv.cvtColor(np.array(Image.open(f'samples/{SAMPLE}')), cv.COLOR_RGB2BGR)
-elif sample_ext in ['mp4']:
+    fps = 30
+elif sample_ext in ['mp4', 'gif']:
     isvideo = True
     video = cv.VideoCapture(f'samples/{SAMPLE}')
     _, img = video.read()
+    frame_count = 0
+    fps = video.get(cv.CAP_PROP_FPS)
 else:
     raise ValueError(f'File extension "{sample_ext}" not supported')
 
 # Prepare to save result as video
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
-out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{sample_name}.mp4', fourcc, 30, img.shape[:2][::-1])
+fps = 30 if isvideo else 30
+out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{sample_name}.mp4', fourcc, fps, img.shape[:2][::-1])
 
 # Genetic algorithm
 ga = GA(
     img,
-    pop_size=100,
-    n_poly=100,             
+    pop_size=50,
+    n_poly=120,             
     n_vertex=3,
     selection_strategy=selection.TruncatedSelection(.1), # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
-    replacement_strategy=replacement.CrowdingReplacement(4), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
+    replacement_strategy=replacement.CommaReplacement(), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
     crossover_type=Individual.UNIFORM_CROSSOVER,         # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ARITHMETIC_CROSSOVER
     self_adaptive=False,                                  # Self-adaptetion of mutation step-sizes
     mutation_rates=(0.02, 0.02, 0.02),                   # If self_adaptive is True, not used
@@ -78,6 +82,7 @@ pso = PSO(
 fbest, favg, fworst = [], [], []
 diversities = []
 try: # Press ctrl+c to exit loop
+    print(f'\nRunning {ALGORITHM.__name__} algorithm over {SAMPLE}.\nPress ctrl+c to terminate the execution.\n')
     while True:
         start_time = time.time()
 
@@ -91,7 +96,7 @@ try: # Press ctrl+c to exit loop
             fbest.append(best.fitness)
             favg.append(np.mean([i.fitness for i in population]))
             fworst.append(population[-1].fitness)
-            if gen % 15 == 0: # Measure diversity every 15 generations
+            if gen % 20 == 0: # Measure diversity every 20 generations
                 diversity = ga.diversity()
                 diversities.append(diversity)
                 additional_info += f', diversity: {int(diversity)}'
@@ -101,7 +106,7 @@ try: # Press ctrl+c to exit loop
 
         # Print and save result
         tot_time = round((time.time() - start_time)*1000)
-        print(f'{gen:04d}) {tot_time:03d}ms, fitness: {fitness:.2f}{additional_info}')
+        print(f'{gen:04d}) {tot_time:04d}ms, fitness: {fitness:.2f}{additional_info}')
 
         # Obtain current best solution
         if ALGORITHM is GA:
@@ -116,12 +121,15 @@ try: # Press ctrl+c to exit loop
         cv.imshow('Result', result)
 
         # Save result in video
-        if (ALGORITHM is GA and gen % 10 == 0) or (ALGORITHM is PSO):
+        if (ALGORITHM is GA and ( \
+                (isvideo and gen%VIDEO_FRAME_GEN==0) or \
+                (not isvideo and gen%10==0))) \
+        or (ALGORITHM is PSO):
             if ALGORITHM is GA: frames = [best_img.copy()]
             elif ALGORITHM is PSO: frames = pso.draw_interpolated(INTERPOLATION_SIZE) # Interpolate frames for better visualization
             for frame in frames:
-                out_frame = cv.putText(frame, f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.4, (0, 0, 255), 2)
-                out.write(out_frame)
+                # frame = cv.putText(frame, f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.4, (0, 0, 255), 2) # Print generation number
+                out.write(frame)
 
         # Key press
         key = cv.waitKey(1) & 0xFF
@@ -129,8 +137,10 @@ try: # Press ctrl+c to exit loop
             cv.waitKey(0)
 
         # Update the target, in case of video input
-        if isvideo and gen % 1000 == 0: # Optimize over new frame every 1000 generations
+        if isvideo and ((frame_count==0 and gen>VIDEO_INIT_GEN) or (frame_count>0 and gen%VIDEO_FRAME_GEN==0)): # Optimize over new frame every 100 generations. First frame used for 1000 generations
             ret, img = video.read()
+            if not ret: break
+            frame_count += 1
             if ALGORITHM is GA: ga.update_target(img)
             elif ALGORITHM is PSO: pso.update_target(img)
         
@@ -142,11 +152,11 @@ out.release()
 
 
 # Plots
-x = range(len(fbest))
 
 # Fitness plots
 fig, ax = plt.subplots()
 fig.suptitle('Fitness trends')
+x = range(len(fbest))
 ax.plot(x, fbest, c='r', label='best')
 if len(favg) > 0:
     ax.plot(x, favg, c='b', label='average')
@@ -158,7 +168,7 @@ ax.legend()
 if len(diversities) > 0:
     fig, ax = plt.subplots()
     fig.suptitle('Diversity')
-    ax.plot(x, diversities, c='b', label='diversity')
+    ax.plot(range(len(diversities)), diversities, c='b', label='diversity')
     ax.legend()
 
 plt.show()
