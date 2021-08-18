@@ -3,13 +3,11 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 import matplotlib.colors as mplc
-import time
+import time, sys
 
-from classes.operators import selection, replacement
 from classes.ga.ga import GA
-from classes.ga.individual import Individual
 from classes.pso.pso import PSO
-from classes.pso.particle import Particle
+from classes.operators import selection, replacement, crossover, velocity_update, topology
 
 # TODO:
 # - complete benchmark and run experiments (save plots for speciation and fitness)
@@ -22,21 +20,20 @@ from classes.pso.particle import Particle
 # - Pareto front of number_vertices vs fitness
 # - Scatter and line plot of diversity (with and without crowding)
 
-
 # Set windows properties
 cv.namedWindow('Result')
 
 # Params
-SAMPLE = 'parachute.mp4'
+SAMPLE = 'wave.jpg' if len(sys.argv) == 1 else sys.argv[1]
 ALGORITHM = GA  # GA or PSO
 INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
-VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 1000, 200 # Number of generations to run for the first and for the other frames, respectively 
+VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 2000, 500 # Number of generations to run for the first and for the other frames, respectively 
 sample_name, sample_ext = SAMPLE.split('.')
 
 # Load image or video
 if sample_ext in ['jpg', 'jpeg', 'png']:
     isvideo = False
-    img = cv.imread(f'samples/{SAMPLE}') #cv.cvtColor(np.array(Image.open(f'samples/{SAMPLE}')), cv.COLOR_RGB2BGR)
+    img = cv.cvtColor(np.array(Image.open(f'samples/{SAMPLE}')), cv.COLOR_RGB2BGR)
     fps = 30
 elif sample_ext in ['mp4', 'gif']:
     isvideo = True
@@ -49,21 +46,20 @@ else:
 
 # Prepare to save result as video
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
-fps = 30 if isvideo else 30
 out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{sample_name}.mp4', fourcc, fps, img.shape[:2][::-1])
 
 # Genetic algorithm
 ga = GA(
     img,
-    pop_size=50,
-    n_poly=120,             
+    pop_size=100,
+    n_poly=100,             
     n_vertex=3,
     selection_strategy=selection.TruncatedSelection(.1), # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
     replacement_strategy=replacement.CommaReplacement(), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
-    crossover_type=Individual.UNIFORM_CROSSOVER,         # Individual.ONE_POINT_CROSSOVER, Individual.UNIFORM_CROSSOVER, Individual.ARITHMETIC_CROSSOVER
-    self_adaptive=False,                                  # Self-adaptetion of mutation step-sizes
+    crossover_type=crossover.UniformCrossover(),         # crossover.OnePointCrossover(), crossover.UniformCrossover(), crossover.ArithmeticCrossover()
+    self_adaptive=False,                                 # Self-adaptetion of mutation step-sizes
     mutation_rates=(0.02, 0.02, 0.02),                   # If self_adaptive is True, not used
-    mutation_step_sizes=(0.2, 0.2, 0.2)                 # If self_adaptive is True, not used
+    mutation_step_sizes=(0.2, 0.2, 0.2)                  # If self_adaptive is True, not used
 )
 
 # Particle swarm optimization
@@ -71,8 +67,8 @@ pso = PSO(
     img,
     swarm_size=500,
     line_length=20,
-    velocity_update_rule=Particle.STANDARD,  # Particle.STANDARD, Particle.FULLY_INFORMED, Particle.COMPREHENSIVE_LEARNING
-    neighborhood_topology=Particle.DISTANCE_TOPOLOGY,  # Particle.DISTANCE_TOPOLOGY, Particle.RING_TOPOLOGY, Particle.STAR_TOPOLOGY
+    velocity_update_rule=velocity_update.Standard(),  # velocity_update.Standard(), velocity_update.FullyInformed(), velocity_update.ComprehensiveLearning()
+    neighborhood_topology=topology.DistanceTopology(),  # topology.DistanceTopology(), topology.RingTopology(), topology.StarTopology()
     neighborhood_size=3,
     coeffs=(0.1, 1.7, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
     min_distance=10,

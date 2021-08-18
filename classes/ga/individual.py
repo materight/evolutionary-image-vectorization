@@ -6,16 +6,11 @@ import cv2 as cv
 from PIL import Image, ImageDraw
 
 from ..problem import Problem
+from ..operators import crossover, mutation
 from .polygon import Polygon
 
 
 class Individual:
-
-    ONE_POINT_CROSSOVER = 1
-    UNIFORM_CROSSOVER = 2
-    ARITHMETIC_CROSSOVER = 3
-    ALIGNED_CROSSOVER = 4
-
 
     def __init__(self, problem, polygons):
         self.problem = problem
@@ -31,12 +26,12 @@ class Individual:
 
     def crossover(parent1, parent2, kind):
         polygons1, polygons2 = [p.copy() for p in parent1.polygons], [p.copy() for p in parent2.polygons]
-        if kind == Individual.ONE_POINT_CROSSOVER:
+        if isinstance(kind, crossover.OnePointCrossover):
             split_idx = randint(0, max(parent1.n_poly, parent2.n_poly))
             offspring_polygons = polygons1[:split_idx] + polygons2[split_idx:]
-        elif kind == Individual.UNIFORM_CROSSOVER:
+        elif isinstance(kind, crossover.UniformCrossover):
             offspring_polygons = [polygons1[i] if rand() < 0.5 else polygons2[i] for i in range(min(parent1.n_poly, parent2.n_poly))]  # Common polygons
-        elif kind == Individual.ARITHMETIC_CROSSOVER:
+        elif isinstance(kind, crossover.ArithmeticCrossover):
             offspring_polygons = [Polygon.average(polygons1[i], polygons2[i]) for i in range(min(parent1.n_poly, parent2.n_poly))]
         else:
             raise ValueError(f'Invalid crossover kind "{kind}"')

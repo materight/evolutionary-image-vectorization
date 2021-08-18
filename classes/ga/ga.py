@@ -9,7 +9,6 @@ from .individual import Individual
 
 class GA:
     
-
     def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_strategy=selection.TruncatedSelection(0.1), replacement_strategy=replacement.CommaReplacement(), crossover_type=Individual.UNIFORM_CROSSOVER, self_adaptive=False, mutation_rates=(0.01, 0.01, 0.01), mutation_step_sizes=(0.2, 0.2, 0.2), internal_resolution=75):
         self.generation = 0
         self.problem = Problem(Problem.RGB, target, internal_resolution)
@@ -35,14 +34,14 @@ class GA:
         
         # Selection
         selection_probs = np.ones(len(self.population))
-        if type(self.selection_strategy) is selection.RouletteWheelSelection: # Roulette wheel selection (fitness-proportionate)
+        if isinstance(self.selection_strategy, selection.RouletteWheelSelection): # Roulette wheel selection (fitness-proportionate)
             selection_probs = np.array([i.fitness for i in self.population])
-        elif type(self.selection_strategy) is selection.RankBasedSelection: # Rank-based selection
+        elif isinstance(self.selection_strategy, selection.RankBasedSelection): # Rank-based selection
             selection_probs = np.arange(len(self.population), 0, -1)
-        elif type(self.selection_strategy) is selection.TruncatedSelection: # Truncated rank-based selection
+        elif isinstance(self.selection_strategy, selection.TruncatedSelection): # Truncated rank-based selection
             selection_count = max(int(len(self.population) * self.selection_strategy.selection_cutoff), 2)
             selection_probs = np.array([1 if i < selection_count else 0 for i in range(len(self.population))])
-        elif type(self.selection_strategy) is selection.TournamentSelection: # Tournament selection
+        elif isinstance(self.selection_strategy, selection.TournamentSelection): # Tournament selection
             pass # Implemented later when selecting individuals for crossover
         else:
             raise ValueError(f'Invalid selection strategy "{self.selection_strategy}"')
@@ -51,7 +50,7 @@ class GA:
         # Crossover
         offspring = []
         for i in range(0, self.pop_size):         
-            if type(self.selection_strategy) is selection.TournamentSelection:
+            if isinstance(self.selection_strategy, selection.TournamentSelection):
                 tournament = np.random.choice(self.population, size=self.selection_strategy.k*2, replace=False)
                 p1, p2 = min(tournament[0::2], key=lambda p: p.fitness), min(tournament[1::2], key=lambda p: p.fitness) # Disjointed tournaments
             else:
@@ -64,11 +63,11 @@ class GA:
             self.next_idx = ind.mutate(self.next_idx, self.mutation_rates, self.mutation_step_sizes)
 
         # Replace old population
-        if type(self.replacement_strategy) is replacement.CommaReplacement:
+        if isinstance(self.replacement_strategy, replacement.CommaReplacement):
             self.population = offspring
-        elif type(self.replacement_strategy) is replacement.PlusReplacement:
+        elif isinstance(self.replacement_strategy, replacement.PlusReplacement):
             self.population = self.population + offspring
-        elif type(self.replacement_strategy) is replacement.CrowdingReplacement:
+        elif isinstance(self.replacement_strategy, replacement.CrowdingReplacement):
             for offspring in offspring:
                 pool_idx = np.random.choice(len(self.population), size=self.replacement_strategy.pool_size, replace=False)
                 closest_idx = min(pool_idx, key=lambda i: Individual.dist(offspring, self.population[i]))
