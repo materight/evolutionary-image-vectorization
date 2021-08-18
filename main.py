@@ -3,19 +3,15 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 import matplotlib.colors as mplc
-import time, sys
+import time, sys, os
 
 from classes.ga.ga import GA
 from classes.pso.pso import PSO
 from classes.operators import selection, replacement, crossover, velocity_update, topology
 
 # TODO:
-# - complete benchmark and run experiments (save plots for speciation and fitness)
-# - save images to add to paper 
-
-# TODO:
 # Images to add to the report:
-# - Resulting images with polygons and litnes
+# - Resulting images with polygons and lines
 # - Plots of fitnesses over generations as a comparison of convergence speed of different methods
 # - Pareto front of number_vertices vs fitness
 # - Scatter and line plot of diversity (with and without crowding)
@@ -46,7 +42,8 @@ else:
 
 # Prepare to save result as video
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
-out = cv.VideoWriter(f'results/{ALGORITHM.__name__}_{sample_name}.mp4', fourcc, fps, img.shape[:2][::-1])
+os.makedirs(f'results/videos', exist_ok=True)
+out = cv.VideoWriter(f'results/videos/{ALGORITHM.__name__}_{sample_name}.mp4', fourcc, fps, img.shape[:2][::-1])
 
 # Genetic algorithm
 ga = GA(

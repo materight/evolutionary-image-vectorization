@@ -9,12 +9,17 @@ from classes.ga.ga import GA
 from classes.pso.pso import PSO
 from classes.operators import selection, replacement, crossover, velocity_update, topology
 
+'''
+This script can be used to automatically test different hyperparameters conbinations and reports the obtained results.
+'''
+
 random.seed(0)
 
 SAMPLE = 'mona_lisa.jpg'
-ALGORITHM = PSO # GA or PSO
-MAX_GENERATIONS = 4
-RESULTS_BASE_PATH = f'results/benchmark/{ALGORITHM.__name__.lower()}'
+ALGORITHM = GA # GA or PSO
+MAX_GENERATIONS = 1000
+NUM_REPETITONS = 1 # Number of repetitions of each run
+RESULTS_BASE_PATH = f'results/benchmark/{ALGORITHM.__name__}'
 
 ALGORITHM_PARAMS = {
     GA: dict(
@@ -56,18 +61,20 @@ def dict_to_str(dict, sep):
     return sep.join([f'{k}={v}' for k,v in dict.items()])
 
 # Run a single instance of the selected algoritm
-def run(params):
-    run_name = dict_to_str(params, ',')
+def run(run_idx, rep_idx, params):
+    run_name = f'run{run_idx}-rep{rep_idx}){dict_to_str(params, ",")}'
     EXP_PATH = f'{RESULTS_BASE_PATH}/{run_name}'
     if not os.path.exists(EXP_PATH): # Do not repeat experiments if the results are already available
         alg = ALGORITHM(img, **params)
         exec_times, fbest, favg, fworst, diversities, fbest_perc = [], [], [], [], [], []
-        for i in tqdm(range(MAX_GENERATIONS)):
+        pbar = tqdm(range(MAX_GENERATIONS))
+        for i in pbar:
             start_time = time.time()
             if ALGORITHM is GA:
                 gen, population = alg.next()
                 best = population[0]
-                fbest.append(best.fitness)
+                fitness = best.fitness
+                fbest.append(fitness)
                 fbest_perc.append(best.fitness_perc*100)
                 favg.append(np.mean([i.fitness for i in population]))
                 fworst.append(population[-1].fitness)
@@ -78,6 +85,7 @@ def run(params):
             # Compute total time spent
             tot_time = round((time.time() - start_time)*1000)
             exec_times.append(tot_time)
+            pbar.set_description(f'Fitness: {fitness:.2f}')
         # Compute image of final best individual
         if ALGORITHM is GA: best_img = best.draw()
         elif ALGORITHM is PSO: best_img = alg.draw()
@@ -94,7 +102,7 @@ def run(params):
         progress.index.name = 'generation'
         progress.to_csv(f'{EXP_PATH}/progress.csv')
         # Save final optimization results
-        results = pd.DataFrame.from_dict({ **params, 'fitness': fbest[-1], 'exec_time': np.mean(exec_times) }, orient='index')
+        results = pd.DataFrame.from_dict({ 'run_idx': run_idx, 'rep_idx': rep_idx, **params, 'fitness': fbest[-1], 'exec_time': np.mean(exec_times) }, orient='index')
         results.to_csv(f'{EXP_PATH}/results.csv', header=False)
   
 
@@ -103,8 +111,12 @@ def merge_results():
 
 # Execute experiments
 print(f'Total number of experiments: {len(params_list)}\n')
-for i, params in enumerate(params_list[:1]):
-    print(f'Run {i+1}/{len(params_list)} with params:')
-    print('\t', dict_to_str(params, '\n\t '))
-    run(params)
+for run_idx, params in enumerate(params_list, start=1):
+    for rep_idx in range(1, NUM_REPETITONS + 1):
+        try:
+            print(f'Run {run_idx}/{len(params_list)} rep {rep_idx}/{NUM_REPETITONS} with params:')
+            print('\t', dict_to_str(params, '\n\t '))
+            run(run_idx, rep_idx, params)
+        except Exception as e:
+            print(f'Exception at run {run_idx} and rep {rep_idx}:\n', e)
 
