@@ -6,7 +6,7 @@ import cv2 as cv
 from PIL import Image, ImageDraw
 
 from ..problem import Problem
-from ..operators import crossover, mutation
+from ..operators import crossover
 from .polygon import Polygon
 
 

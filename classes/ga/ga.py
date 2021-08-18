@@ -1,15 +1,12 @@
-from os import replace
 import numpy as np
-import cv2 as cv
-from numpy.random import randint, random_sample, shuffle, choice
 
-from ..operators import selection, replacement
 from ..problem import Problem
 from .individual import Individual
+from ..operators import selection, replacement
 
 class GA:
     
-    def __init__(self, target, pop_size=50, n_poly=100, n_vertex=3, selection_strategy=selection.TruncatedSelection(0.1), replacement_strategy=replacement.CommaReplacement(), crossover_type=Individual.UNIFORM_CROSSOVER, self_adaptive=False, mutation_rates=(0.01, 0.01, 0.01), mutation_step_sizes=(0.2, 0.2, 0.2), internal_resolution=75):
+    def __init__(self, target, pop_size, n_poly, n_vertex, selection_strategy, replacement_strategy, crossover_type, self_adaptive, mutation_rates, mutation_step_sizes, internal_resolution=75):
         self.generation = 0
         self.problem = Problem(Problem.RGB, target, internal_resolution)
         self.pop_size = pop_size

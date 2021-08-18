@@ -19,7 +19,7 @@ class selection:
     class TournamentSelection(Operator): 
         def __init__(self, k):
             super(selection.TournamentSelection, self).__init__(k)
-            self.selection_cutoff = k
+            self.k = k
 
 
 # Survivor replacement

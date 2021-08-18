@@ -78,7 +78,7 @@ pso = PSO(
 fbest, favg, fworst = [], [], []
 diversities = []
 try: # Press ctrl+c to exit loop
-    print(f'\nRunning {ALGORITHM.__name__} algorithm over {SAMPLE}.\nPress ctrl+c to terminate the execution.\n')
+    print(f'\nRunning {ALGORITHM.__name__} algorithm over "{SAMPLE}".\nPress ctrl+c to terminate the execution.\n')
     while True:
         start_time = time.time()
 

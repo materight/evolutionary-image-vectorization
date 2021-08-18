@@ -12,7 +12,7 @@ from classes.operators import selection, replacement, crossover, velocity_update
 random.seed(0)
 
 SAMPLE = 'mona_lisa.jpg'
-ALGORITHM = GA # GA or PSO
+ALGORITHM = PSO # GA or PSO
 MAX_GENERATIONS = 4
 RESULTS_BASE_PATH = f'results/benchmark/{ALGORITHM.__name__.lower()}'
 
@@ -61,13 +61,14 @@ def run(params):
     EXP_PATH = f'{RESULTS_BASE_PATH}/{run_name}'
     if not os.path.exists(EXP_PATH): # Do not repeat experiments if the results are already available
         alg = ALGORITHM(img, **params)
-        exec_times, fbest, favg, fworst, diversities = [], [], [], [], []
+        exec_times, fbest, favg, fworst, diversities, fbest_perc = [], [], [], [], [], []
         for i in tqdm(range(MAX_GENERATIONS)):
             start_time = time.time()
             if ALGORITHM is GA:
                 gen, population = alg.next()
                 best = population[0]
                 fbest.append(best.fitness)
+                fbest_perc.append(best.fitness_perc*100)
                 favg.append(np.mean([i.fitness for i in population]))
                 fworst.append(population[-1].fitness)
                 diversities.append(alg.diversity() if gen%20==0 else None) # Measure diversity every 20 generations
@@ -81,17 +82,20 @@ def run(params):
         if ALGORITHM is GA: best_img = best.draw()
         elif ALGORITHM is PSO: best_img = alg.draw()
         # Save best image
+        os.makedirs(EXP_PATH)
         cv.imwrite(f'{EXP_PATH}/best.jpg', best_img)
         # Save convergence information for each generation
-        data = { 'execution_time': exec_times, 'best_fitness': fbest }
+        data = { 'execution_time_ms': exec_times, 'best_fitness': fbest }
         if ALGORITHM is GA:
-            data = { **data, 'avg_fitness': favg, 'worst_fitness':fworst, 'diversity': diversities }
+            data = { 'execution_time_ms': exec_times, 'best_fitness_perc': fbest_perc, 'best_fitness': fbest, 'avg_fitness': favg, 'worst_fitness':fworst, 'diversity': diversities }
+        elif ALGORITHM is PSO:
+            data = { 'execution_time_ms': exec_times, 'best_fitness': fbest }
         progress = pd.DataFrame(data, index=range(1, len(fbest) + 1))
         progress.index.name = 'generation'
         progress.to_csv(f'{EXP_PATH}/progress.csv')
         # Save final optimization results
         results = pd.DataFrame.from_dict({ **params, 'fitness': fbest[-1], 'exec_time': np.mean(exec_times) }, orient='index')
-        results.to_csv(f'{EXP_PATH}/results.csv')
+        results.to_csv(f'{EXP_PATH}/results.csv', header=False)
   
 
 def merge_results():
@@ -99,7 +103,7 @@ def merge_results():
 
 # Execute experiments
 print(f'Total number of experiments: {len(params_list)}\n')
-for i, params in enumerate(params_list):
+for i, params in enumerate(params_list[:1]):
     print(f'Run {i+1}/{len(params_list)} with params:')
     print('\t', dict_to_str(params, '\n\t '))
     run(params)

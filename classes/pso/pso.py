@@ -8,7 +8,7 @@ from ..utils import interpolate
 
 class PSO:
 
-    def __init__(self, target, swarm_size=100, line_length=20, velocity_update_rule=Particle.STANDARD, neighborhood_topology=Particle.STAR_TOPOLOGY, neighborhood_size=5, coeffs=(0.5, 4.1, 0.1), min_distance=5, max_velocity=-1, internal_resolution=-1):
+    def __init__(self, target, swarm_size, line_length, velocity_update_rule, neighborhood_topology, neighborhood_size, coeffs, min_distance, max_velocity, internal_resolution=-1):
         self.iteration = 0
         self.problem = Problem(Problem.GRAYSCALE, target, internal_resolution)
         self.velocity_update_rule = velocity_update_rule
