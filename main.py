@@ -108,8 +108,8 @@ try: # Press ctrl+c to exit loop
             best_img = pso.draw()
 
         # Show current best
-        best_img = cv.resize(best_img, img.shape[1::-1])
-        result = np.hstack([img, best_img])
+        result = cv.resize(best_img, img.shape[1::-1])
+        result = np.hstack([img, result])
         result = cv.resize(result, None, fx=.6, fy=.6)
         cv.imshow('Result', result)
 
@@ -140,6 +140,11 @@ try: # Press ctrl+c to exit loop
 except KeyboardInterrupt:
     pass
 
+# Save final individual image
+os.makedirs(f'results/images', exist_ok=True)
+cv.imwrite(f'results/images/{ALGORITHM.__name__}_{sample_name}.jpg', best_img)
+
+# Clear all
 cv.destroyAllWindows()
 out.release()
 

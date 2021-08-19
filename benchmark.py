@@ -25,7 +25,7 @@ ALGORITHM_PARAMS = {
     GA: dict(
         pop_size=[50, 100],
         n_poly=[50, 100, 200],
-        n_vertex=[3],
+        n_vertex=[6],
         selection_strategy=[selection.RouletteWheelSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10), selection.TruncatedSelection(.2)],
         replacement_strategy=[replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(2), replacement.CrowdingReplacement(5)],
         crossover_type=[crossover.OnePointCrossover(), crossover.UniformCrossover()],
