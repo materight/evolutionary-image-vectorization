@@ -4,6 +4,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import matplotlib.colors as mplc
 import time, sys, os
+import sklearn.manifold
 
 from classes.ga.ga import GA
 from classes.pso.pso import PSO
@@ -20,7 +21,7 @@ from classes.operators import selection, replacement, crossover, velocity_update
 cv.namedWindow('Result')
 
 # Params
-SAMPLE = 'wave.jpg' if len(sys.argv) == 1 else sys.argv[1]
+SAMPLE = 'mona_lisa.jpg' if len(sys.argv) == 1 else sys.argv[1]
 ALGORITHM = GA  # GA or PSO
 INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
 VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 2000, 500 # Number of generations to run for the first and for the other frames, respectively 
@@ -52,7 +53,7 @@ ga = GA(
     n_poly=100,             
     n_vertex=3,
     selection_strategy=selection.TruncatedSelection(.1), # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
-    replacement_strategy=replacement.CommaReplacement(), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
+    replacement_strategy=replacement.CrowdingReplacement(4), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
     crossover_type=crossover.UniformCrossover(),         # crossover.OnePointCrossover(), crossover.UniformCrossover(), crossover.ArithmeticCrossover()
     self_adaptive=False,                                 # Self-adaptetion of mutation step-sizes
     mutation_rates=(0.02, 0.02, 0.02),                   # If self_adaptive is True, not used
@@ -73,7 +74,7 @@ pso = PSO(
 )
 
 fbest, favg, fworst = [], [], []
-diversities = []
+diversities, dist = [], None
 try: # Press ctrl+c to exit loop
     print(f'\nRunning {ALGORITHM.__name__} algorithm over "{SAMPLE}".\nPress ctrl+c to terminate the execution.\n')
     while True:
@@ -90,7 +91,8 @@ try: # Press ctrl+c to exit loop
             favg.append(np.mean([i.fitness for i in population]))
             fworst.append(population[-1].fitness)
             if gen % 20 == 0: # Measure diversity every 20 generations
-                diversity = ga.diversity()
+                dist = ga.diversity()
+                diversity = dist.sum()
                 diversities.append(diversity)
                 additional_info += f', diversity: {int(diversity)}'
         elif ALGORITHM is PSO:
@@ -168,5 +170,10 @@ if len(diversities) > 0:
     fig.suptitle('Diversity')
     ax.plot(range(len(diversities)), diversities, c='b', label='diversity')
     ax.legend()
+
+if dist is not None:
+    dist_proj = sklearn.manifold.TSNE(metric='precomputed', perplexity=15, random_state=0).fit_transform(dist)
+    plt.scatter(dist_proj[:, 0], dist_proj[:, 1], s=4, c='r')
+
 
 plt.show()

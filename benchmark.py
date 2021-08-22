@@ -25,7 +25,7 @@ ALGORITHM_PARAMS = {
     GA: dict(
         pop_size=[50, 100],
         n_poly=[50, 100, 200],
-        n_vertex=[6],
+        n_vertex=[5],
         selection_strategy=[selection.RouletteWheelSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10), selection.TruncatedSelection(.2)],
         replacement_strategy=[replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(2), replacement.CrowdingReplacement(5)],
         crossover_type=[crossover.OnePointCrossover(), crossover.UniformCrossover()],
@@ -78,7 +78,7 @@ def run(run_idx, rep_idx, params):
                 fbest_perc.append(best.fitness_perc*100)
                 favg.append(np.mean([i.fitness for i in population]))
                 fworst.append(population[-1].fitness)
-                diversities.append(alg.diversity() if gen%20==0 else None) # Measure diversity every 20 generations
+                diversities.append(alg.diversity().sum() if gen%20==0 else None) # Measure diversity every 20 generations
             elif ALGORITHM is PSO:
                 gen, fitness = alg.next()
                 fbest.append(fitness)

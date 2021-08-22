@@ -93,15 +93,7 @@ class GA:
             for j in range(i+1, len(self.population)):
                 dist[i, j] = Individual.dist(self.population[i], self.population[j])          
                 dist[j, i] = dist[i, j]
-        '''
-        if self.generation > 0:
-            import sklearn.manifold
-            import matplotlib.pyplot as plt
-            res = sklearn.manifold.TSNE(metric='precomputed', random_state=0).fit_transform(dist)
-            plt.scatter(res[:, 0], res[:, 1], s=4, c='r')
-            plt.show()
-        '''
-        return dist.sum()
+        return dist
 
 
     def update_target(self, target):
