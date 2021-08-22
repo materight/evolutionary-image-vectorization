@@ -53,5 +53,7 @@ Both algorithms can be also applied to videos:
 In the `main.py` it is possible to change the hyper-parameters used by each algorithm.
 
 ## Project structure
-- Directory `classes` contains the implementation of the algorithms, for both GA and PSO. \
-- `samples` contains a set of sample images that can be used to test the models.
+- Folder `classes` contains the implementation of the algorithms, for both GA and PSO.
+- Folder `samples` contains a set of sample images that can be used to test the models.
+- `main.py` is the main script that can be used to generate the vectorized image for one sample.
+- `benchmark.py` can be used to run multiple hyper-parameter combinations and report the results.
