@@ -3,4 +3,5 @@
 __pycache__
 
 results
+!results/images/*
 analysis.py
