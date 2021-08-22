@@ -30,7 +30,16 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
 Both algorithms can be also applied to videos:
 <div align="center">
     <img src="samples/run.gif" height="150"/>
+    <img src="samples/cars.gif" height="150"/>
+    <img src="samples/basket.gif" height="150"/>
+    <img src="samples/parachute.gif" height="150"/>
+</div>
+
+<div align="center">
     <img src="results/images/GA_run.gif" height="150"/>
+    <img src="results/images/GA_cars.gif" height="150"/>
+    <img src="results/images/GA_basket.gif" height="150"/>
+    <img src="results/images/GA_parachute.gif" height="150"/>
 </div>
 
 ## Get started
