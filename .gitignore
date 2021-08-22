@@ -2,6 +2,6 @@
 .vscode
 __pycache__
 
-results
-!results/images/*
+results/*
+!results/images
 analysis.py
