@@ -61,12 +61,12 @@ ga = GA(
 pso = PSO(
     img,
     swarm_size=1000,
-    line_length=10,
+    line_length=15,
     velocity_update_rule=velocity_update.Standard(),  # velocity_update.Standard(), velocity_update.FullyInformed(), velocity_update.ComprehensiveLearning()
     neighborhood_topology=topology.StarTopology(),  # topology.DistanceTopology(), topology.RingTopology(), topology.StarTopology()
     neighborhood_size=3,
-    coeffs=(0.1, 1.5, 1.2),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7)
-    min_distance=0,
+    coeffs=(0.1, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7)
+    min_distance=2,
     max_velocity=50
 )
 
