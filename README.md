@@ -25,6 +25,7 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
 <div align="center">
     <img src="results/images/PSO_mona_lisa.jpg" height="150"/>
     <img src="results/images/PSO_dog.jpg" height="150"/>
+    <img src="results/images/PSO_liberty_statue.jpg" height="150"/>
 </div>
 
 Both algorithms can be also applied to videos:
