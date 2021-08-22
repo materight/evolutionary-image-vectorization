@@ -5,19 +5,24 @@ An evolutionary approach to image vectorization, based on Genetic Algorithms and
 ### Genetic Algorithm
 A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and the final quality of the results.
 <p align="center">
-    <img src="results/images/GA_mona_lisa.jpg" height="200"/>
-    <img src="results/images/GA_dog.jpg" height="200"/>
-    <img src="results/images/GA_liberty_statue.jpg" height="200"/>
-    <img src="results/images/GA_starry_night.jpg" height="200"/>
+    <img src="results/images/GA_mona_lisa.jpg" height="150"/>
+    <img src="results/images/GA_dog.jpg" height="150"/>
+    <img src="results/images/GA_liberty_statue.jpg" height="150"/>
+    <img src="results/images/GA_starry_night.jpg" height="150"/>
 </p>
 
 ### Particle Swarm Optimization
 A set of segments are evolved to reproduce the most relevant contours of the target image. This approach is similar to an edge detection algorithm, with the advantage that the final contours returned are in a vectorized format. 
  
 <p align="center">
-    <img src="results/images/PSO_mona_lisa.jpg" height="200"/>
-    <img src="results/images/PSO_dog.jpg" height="200"/>
-    <img src="results/images/PSO_liberty_statue.jpg" height="200"/>
+    <img src="results/images/PSO_mona_lisa.jpg" height="150"/>
+    <img src="results/images/PSO_dog.jpg" height="150"/>
+    <img src="results/images/PSO_liberty_statue.jpg" height="150"/>
+</p>
+
+Both algorithms can be also applied to videos:
+<p align="center">
+    <img src="results/images/GA_run.gif" height="150"/>
 </p>
 
 ## Get started
