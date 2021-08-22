@@ -10,7 +10,7 @@ class Line:
 
     def random(problem, length):
         img_size = np.array(problem.target.shape[:2][::-1])
-        center = randint(low=length//2, high=img_size-length//2, size=2)
+        center = randint(low=length//2+1, high=img_size-length//2-1, size=2)
         theta = rand()*2*np.pi # Rotation angle in radians
         return Line(img_size, length, np.array([*center, theta], dtype=np.float64))
 

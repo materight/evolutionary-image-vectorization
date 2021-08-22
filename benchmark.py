@@ -17,7 +17,7 @@ random.seed(0)
 
 SAMPLE = 'mona_lisa.jpg'
 ALGORITHM = GA # GA or PSO
-MAX_GENERATIONS = 1000
+MAX_GENERATIONS = 1000 if ALGORITHM is GA else 50
 NUM_REPETITONS = 1 # Number of repetitions of each run
 RESULTS_BASE_PATH = f'results/benchmark/{ALGORITHM.__name__}'
 
@@ -34,14 +34,14 @@ ALGORITHM_PARAMS = {
         mutation_step_sizes=[(0.2, 0.2, 0.2)]
     ),
     PSO: dict(
-        swarm_size=[100, 300],
-        line_length=[20],
+        swarm_size=[500, 1000],
+        line_length=[10, 20],
         velocity_update_rule=[velocity_update.Standard(), velocity_update.FullyInformed(), velocity_update.ComprehensiveLearning()],
-        neighborhood_topology=[topology.DistanceTopology()],
-        neighborhood_size=[3],
-        coeffs=[(0.1, 1.7, 1.5), (0.7, 1.5, 1.5)],
-        min_distance=[5, 10],
-        max_velocity=[10]
+        neighborhood_topology=[topology.DistanceTopology(), topology.StarTopology(), topology.RingTopology()],
+        neighborhood_size=[3, 5],
+        coeffs=[(0.1, 1.7, 1.2), (0.7, 1.5, 1.5)],
+        min_distance=[0, 5, 10],
+        max_velocity=[50]
     ),
 }
 

@@ -28,6 +28,7 @@ class PSO:
         for i, particle in enumerate(self.swarm):
             particle.move(i, self.swarm, self.velocity_update_rule, self.neighborhood_topology, self.neighborhood_size, self.coeffs, self.min_distance, self.max_velocity)
             fitness += particle.fitness
+        fitness = fitness / len(self.npswarm)
         return self.iteration, fitness
 
     def draw(self):

@@ -10,23 +10,20 @@ from classes.ga.ga import GA
 from classes.pso.pso import PSO
 from classes.operators import selection, replacement, crossover, velocity_update, topology
 
-# TODO:
-# Images to add to the report:
-# - Resulting images with polygons and lines
-# - Plots of fitnesses over generations as a comparison of convergence speed of different methods
-# - Pareto front of number_vertices vs fitness
-# - Scatter and line plot of diversity (with and without crowding)
-
 # Set windows properties
 cv.namedWindow('Result')
 
 # Params
-SAMPLE = 'mona_lisa.jpg' if len(sys.argv) == 1 else sys.argv[1]
-ALGORITHM = GA  # GA or PSO
+SAMPLE = 'unitn.jpg'
+ALGORITHM = PSO  # GA or PSO
 INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
 VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 2000, 500 # Number of generations to run for the first and for the other frames, respectively 
-sample_name, sample_ext = SAMPLE.split('.')
 
+if len(sys.argv) > 1:
+    SAMPLE = sys.argv[1]
+    ALGORITHM = PSO if sys.argv[2] == 'PSO' else GA
+
+sample_name, sample_ext = SAMPLE.split('.')
 # Load image or video
 if sample_ext in ['jpg', 'jpeg', 'png']:
     isvideo = False
@@ -50,27 +47,27 @@ out = cv.VideoWriter(f'results/videos/{ALGORITHM.__name__}_{sample_name}.mp4', f
 ga = GA(
     img,
     pop_size=100,
-    n_poly=100,             
-    n_vertex=3,
+    n_poly=120,             
+    n_vertex=4,
     selection_strategy=selection.TruncatedSelection(.1), # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
-    replacement_strategy=replacement.CrowdingReplacement(4), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
+    replacement_strategy=replacement.CommaReplacement(), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
     crossover_type=crossover.UniformCrossover(),         # crossover.OnePointCrossover(), crossover.UniformCrossover(), crossover.ArithmeticCrossover()
     self_adaptive=False,                                 # Self-adaptetion of mutation step-sizes
     mutation_rates=(0.02, 0.02, 0.02),                   # If self_adaptive is True, not used
-    mutation_step_sizes=(0.2, 0.2, 0.2)                  # If self_adaptive is True, not used
+    mutation_step_sizes=(0.1, 0.1, 0.1)                  # If self_adaptive is True, not used
 )
 
 # Particle swarm optimization
 pso = PSO(
     img,
-    swarm_size=500,
-    line_length=20,
+    swarm_size=1000,
+    line_length=10,
     velocity_update_rule=velocity_update.Standard(),  # velocity_update.Standard(), velocity_update.FullyInformed(), velocity_update.ComprehensiveLearning()
-    neighborhood_topology=topology.DistanceTopology(),  # topology.DistanceTopology(), topology.RingTopology(), topology.StarTopology()
+    neighborhood_topology=topology.StarTopology(),  # topology.DistanceTopology(), topology.RingTopology(), topology.StarTopology()
     neighborhood_size=3,
-    coeffs=(0.1, 1.7, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7) # Check https://doi.org/10.1145/1830483.1830492
-    min_distance=10,
-    max_velocity=10
+    coeffs=(0.1, 1.5, 1.2),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7)
+    min_distance=0,
+    max_velocity=50
 )
 
 fbest, favg, fworst = [], [], []
@@ -101,7 +98,7 @@ try: # Press ctrl+c to exit loop
 
         # Print and save result
         tot_time = round((time.time() - start_time)*1000)
-        print(f'{gen:04d}) {tot_time:04d}ms, fitness: {fitness:.2f}{additional_info}')
+        print(f'{gen:04d}) {tot_time:04d}ms, fitness: {fitness:.4f}{additional_info}')
 
         # Obtain current best solution
         if ALGORITHM is GA:
@@ -172,8 +169,9 @@ if len(diversities) > 0:
     ax.legend()
 
 if dist is not None:
-    dist_proj = sklearn.manifold.TSNE(metric='precomputed', perplexity=15, random_state=0).fit_transform(dist)
-    plt.scatter(dist_proj[:, 0], dist_proj[:, 1], s=4, c='r')
-
+    fig, ax = plt.subplots()
+    fig.suptitle('Diversity scatter plot')
+    dist_proj = sklearn.manifold.TSNE(metric='precomputed', perplexity=7, random_state=0).fit_transform(dist)
+    ax.scatter(dist_proj[:, 0], dist_proj[:, 1], s=4, c='r')
 
 plt.show()
