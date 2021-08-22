@@ -3,7 +3,9 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 import matplotlib.colors as mplc
-import time, sys, os
+import time
+import sys
+import os
 import sklearn.manifold
 
 from classes.ga.ga import GA
@@ -16,8 +18,8 @@ cv.namedWindow('Result')
 # Params
 SAMPLE = 'unitn.jpg'
 ALGORITHM = PSO  # GA or PSO
-INTERPOLATION_SIZE = 5 # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
-VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 2000, 500 # Number of generations to run for the first and for the other frames, respectively 
+INTERPOLATION_SIZE = 5  # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
+VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 2000, 500  # Number of generations to run for the first and for the other frames, respectively
 
 if len(sys.argv) > 1:
     SAMPLE = sys.argv[1]
@@ -47,10 +49,10 @@ out = cv.VideoWriter(f'results/videos/{ALGORITHM.__name__}_{sample_name}.mp4', f
 ga = GA(
     img,
     pop_size=100,
-    n_poly=120,             
+    n_poly=120,
     n_vertex=4,
-    selection_strategy=selection.TruncatedSelection(.1), # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
-    replacement_strategy=replacement.CommaReplacement(), # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
+    selection_strategy=selection.TruncatedSelection(.1),  # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
+    replacement_strategy=replacement.CommaReplacement(),  # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
     crossover_type=crossover.UniformCrossover(),         # crossover.OnePointCrossover(), crossover.UniformCrossover(), crossover.ArithmeticCrossover()
     self_adaptive=False,                                 # Self-adaptetion of mutation step-sizes
     mutation_rates=(0.02, 0.02, 0.02),                   # If self_adaptive is True, not used
@@ -62,7 +64,7 @@ pso = PSO(
     img,
     swarm_size=1000,
     line_length=10,
-    velocity_update_rule=velocity_update.Standard(),  # velocity_update.Standard(), velocity_update.FullyInformed(), velocity_update.ComprehensiveLearning()
+    velocity_update_rule=velocity_update.FullyInformed(),  # velocity_update.Standard(), velocity_update.FullyInformed(), velocity_update.ComprehensiveLearning()
     neighborhood_topology=topology.StarTopology(),  # topology.DistanceTopology(), topology.RingTopology(), topology.StarTopology()
     neighborhood_size=3,
     coeffs=(0.1, 1.5, 1.2),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7)
@@ -72,7 +74,7 @@ pso = PSO(
 
 fbest, favg, fworst = [], [], []
 diversities, dist = [], None
-try: # Press ctrl+c to exit loop
+try:  # Press ctrl+c to exit loop
     print(f'\nRunning {ALGORITHM.__name__} algorithm over "{SAMPLE}".\nPress ctrl+c to terminate the execution.\n')
     while True:
         start_time = time.time()
@@ -87,7 +89,7 @@ try: # Press ctrl+c to exit loop
             fbest.append(best.fitness)
             favg.append(np.mean([i.fitness for i in population]))
             fworst.append(population[-1].fitness)
-            if gen % 20 == 0: # Measure diversity every 20 generations
+            if gen % 20 == 0:  # Measure diversity every 20 generations
                 dist = ga.diversity()
                 diversity = dist.sum()
                 diversities.append(diversity)
@@ -113,12 +115,14 @@ try: # Press ctrl+c to exit loop
         cv.imshow('Result', result)
 
         # Save result in video
-        if (ALGORITHM is GA and ( \
-                (isvideo and gen%VIDEO_FRAME_GEN==0) or \
-                (not isvideo and gen%10==0))) \
-        or (ALGORITHM is PSO):
-            if ALGORITHM is GA: frames = [best_img.copy()]
-            elif ALGORITHM is PSO: frames = pso.draw_interpolated(INTERPOLATION_SIZE) # Interpolate frames for better visualization
+        if (ALGORITHM is GA and (
+            (isvideo and gen % VIDEO_FRAME_GEN == 0) or
+            (not isvideo and gen % 10 == 0))) \
+                or (ALGORITHM is PSO):
+            if ALGORITHM is GA:
+                frames = [best_img.copy()]
+            elif ALGORITHM is PSO:
+                frames = pso.draw_interpolated(INTERPOLATION_SIZE)  # Interpolate frames for better visualization
             for frame in frames:
                 # frame = cv.putText(frame, f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.4, (0, 0, 255), 2) # Print generation number
                 out.write(frame)
@@ -129,13 +133,16 @@ try: # Press ctrl+c to exit loop
             cv.waitKey(0)
 
         # Update the target, in case of video input
-        if isvideo and ((frame_count==0 and gen>VIDEO_INIT_GEN) or (frame_count>0 and gen%VIDEO_FRAME_GEN==0)): # Optimize over new frame every 100 generations. First frame used for 1000 generations
+        if isvideo and ((frame_count == 0 and gen > VIDEO_INIT_GEN) or (frame_count > 0 and gen % VIDEO_FRAME_GEN == 0)):  # Optimize over new frame every 100 generations. First frame used for 1000 generations
             ret, img = video.read()
-            if not ret: break
+            if not ret:
+                break
             frame_count += 1
-            if ALGORITHM is GA: ga.update_target(img)
-            elif ALGORITHM is PSO: pso.update_target(img)
-        
+            if ALGORITHM is GA:
+                ga.update_target(img)
+            elif ALGORITHM is PSO:
+                pso.update_target(img)
+
 except KeyboardInterrupt:
     pass
 
