@@ -6,16 +6,16 @@ An evolutionary approach to image vectorization, based on Genetic Algorithms and
 A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and the final quality of the results.
 
 <div align="center">
-    <img src="samples/mona_lisa.jpg" height="150"/>
-    <img src="samples/dog.jpg" height="150"/>
-    <img src="samples/liberty_statue.jpg" height="150"/>
-    <img src="samples/starry_night.jpg" height="150"/>
+    <img src="samples/mona_lisa.jpg" height="200"/>
+    <img src="samples/dog.jpg" height="200"/>
+    <img src="samples/liberty_statue.jpg" height="200"/>
+    <img src="samples/starry_night.jpg" height="200"/>
 </div>
 <div align="center">
-    <img src="results/images/GA_mona_lisa.jpg" height="150"/>
-    <img src="results/images/GA_dog.jpg" height="150"/>
-    <img src="results/images/GA_liberty_statue.jpg" height="150"/>
-    <img src="results/images/GA_starry_night.jpg" height="150"/>
+    <img src="results/images/GA_mona_lisa.jpg" height="200"/>
+    <img src="results/images/GA_dog.jpg" height="200"/>
+    <img src="results/images/GA_liberty_statue.jpg" height="200"/>
+    <img src="results/images/GA_starry_night.jpg" height="200"/>
 </div>
 
 ### Particle Swarm Optimization
@@ -23,9 +23,9 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
 
  
 <div align="center">
-    <img src="results/images/PSO_mona_lisa.jpg" height="150"/>
-    <img src="results/images/PSO_dog.jpg" height="150"/>
-    <img src="results/images/PSO_liberty_statue.jpg" height="150"/>
+    <img src="results/images/PSO_mona_lisa.jpg" height="230"/>
+    <img src="results/images/PSO_dog.jpg" height="230"/>
+    <img src="results/images/PSO_liberty_statue.jpg" height="230"/>
 </div>
 
 Both algorithms can be also applied to videos:
