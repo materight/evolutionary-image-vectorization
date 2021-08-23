@@ -3,7 +3,7 @@
 An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization.
 
 ### Genetic Algorithm
-A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and the final quality of the results.
+A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and final quality of the results.
 
 <div align="center">
     <img src="samples/mona_lisa.jpg" height="170"/>
@@ -28,6 +28,7 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
     <img src="results/images/PSO_liberty_statue.jpg" height="230"/>
 </div>
 
+
 Both algorithms can be also applied to videos:
 <div align="center">
     <img src="samples/parachute.gif" height="150"/>
@@ -47,10 +48,10 @@ Both algorithms can be also applied to videos:
 - Clone the repository
 - Install the required dependencies by running `pip install opencv numpy pandas matplotlib numba`
 - Run `main.py target algorithm`:
-    - `target`: the target image file name. Check the `samples` folder for a list of available. Supports also `.gifs` and `.mp4`.
-    - `algorithm`: the algorithm to use. Can be either `GA` or `PSO`.
+    - `target`: the target image file name. Check the `samples` folder for a list of available images. Supports also `.gifs` and `.mp4`.
+    - `algorithm`: the algorithm to use, can be either `GA` or `PSO`.
 
-In the `main.py` it is possible to change the hyper-parameters used by each algorithm.
+In `main.py` it is possible to change the hyper-parameters used by each algorithm.
 
 ## Project structure
 - Folder `classes` contains the implementation of the algorithms, for both GA and PSO.
