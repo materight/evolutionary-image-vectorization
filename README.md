@@ -3,19 +3,19 @@
 An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization.
 
 ### Genetic Algorithm
-A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and the final quality of the results.
+A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and final quality of the results.
 
 <div align="center">
-    <img src="samples/mona_lisa.jpg" height="150"/>
-    <img src="samples/dog.jpg" height="150"/>
-    <img src="samples/liberty_statue.jpg" height="150"/>
-    <img src="samples/starry_night.jpg" height="150"/>
+    <img src="samples/mona_lisa.jpg" height="170"/>
+    <img src="samples/dog.jpg" height="170"/>
+    <img src="samples/liberty_statue.jpg" height="170"/>
+    <img src="samples/starry_night.jpg" height="170"/>
 </div>
 <div align="center">
-    <img src="results/images/GA_mona_lisa.jpg" height="150"/>
-    <img src="results/images/GA_dog.jpg" height="150"/>
-    <img src="results/images/GA_liberty_statue.jpg" height="150"/>
-    <img src="results/images/GA_starry_night.jpg" height="150"/>
+    <img src="results/images/GA_mona_lisa.jpg" height="170"/>
+    <img src="results/images/GA_dog.jpg" height="170"/>
+    <img src="results/images/GA_liberty_statue.jpg" height="170"/>
+    <img src="results/images/GA_starry_night.jpg" height="170"/>
 </div>
 
 ### Particle Swarm Optimization
@@ -23,34 +23,35 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
 
  
 <div align="center">
-    <img src="results/images/PSO_mona_lisa.jpg" height="150"/>
-    <img src="results/images/PSO_dog.jpg" height="150"/>
-    <img src="results/images/PSO_liberty_statue.jpg" height="150"/>
+    <img src="results/images/PSO_mona_lisa.jpg" height="230"/>
+    <img src="results/images/PSO_dog.jpg" height="230"/>
+    <img src="results/images/PSO_liberty_statue.jpg" height="230"/>
 </div>
+
 
 Both algorithms can be also applied to videos:
 <div align="center">
+    <img src="samples/parachute.gif" height="150"/>
     <img src="samples/run.gif" height="150"/>
     <img src="samples/cars.gif" height="150"/>
     <img src="samples/basket.gif" height="150" width="250"/>
-    <img src="samples/parachute.gif" height="150"/>
 </div>
 
 <div align="center">
+    <img src="results/images/GA_parachute.gif" height="150"/>
     <img src="results/images/GA_run.gif" height="150"/>
     <img src="results/images/GA_cars.gif" height="150"/>
     <img src="results/images/GA_basket.gif" height="150" width="250"/>
-    <img src="results/images/GA_parachute.gif" height="150"/>
 </div>
 
 ## Get started
 - Clone the repository
 - Install the required dependencies by running `pip install opencv numpy pandas matplotlib numba`
 - Run `main.py target algorithm`:
-    - `target`: the target image file name. Check the `samples` folder for a list of available. Supports also `.gifs` and `.mp4`.
-    - `algorithm`: the algorithm to use. Can be either `GA` or `PSO`.
+    - `target`: the target image file name. Check the `samples` folder for a list of available images. Supports also `.gifs` and `.mp4`.
+    - `algorithm`: the algorithm to use, can be either `GA` or `PSO`.
 
-In the `main.py` it is possible to change the hyper-parameters used by each algorithm.
+In `main.py` it is possible to change the hyper-parameters used by each algorithm.
 
 ## Project structure
 - Folder `classes` contains the implementation of the algorithms, for both GA and PSO.
