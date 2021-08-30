@@ -16,8 +16,8 @@ from classes.operators import selection, replacement, crossover, velocity_update
 cv.namedWindow('Result')
 
 # Params
-SAMPLE = 'unitn.jpg'
-ALGORITHM = PSO  # GA or PSO
+SAMPLE = 'mona_lisa.jpg'
+ALGORITHM = GA  # GA or PSO
 INTERPOLATION_SIZE = 5  # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
 VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 2000, 500  # Number of generations to run for the first and for the other frames, respectively
 
@@ -49,8 +49,8 @@ out = cv.VideoWriter(f'results/videos/{ALGORITHM.__name__}_{sample_name}.mp4', f
 ga = GA(
     img,
     pop_size=100,
-    n_poly=120,
-    n_vertex=4,
+    n_poly=100,
+    n_vertex=3,
     selection_strategy=selection.TruncatedSelection(.1),  # selection.RouletteWheelSelection(), selection.RankBasedSelection(), selection.TruncatedSelection(.1), selection.TournamentSelection(10)
     replacement_strategy=replacement.CommaReplacement(),  # replacement.CommaReplacement(), replacement.PlusReplacement(), replacement.CrowdingReplacement(4)
     crossover_type=crossover.UniformCrossover(),         # crossover.OnePointCrossover(), crossover.UniformCrossover(), crossover.ArithmeticCrossover()
