@@ -2,6 +2,13 @@
 
 An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization.
 
+<div align="center">
+    <img src="samples/mona_lisa.jpg" height="170"/>
+    <img src="results/images/GA_mona_lisa.gif" height="170"/>
+    <img src="results/images/PSO_mona_lisa.gif" height="170"/>
+</div>
+
+
 ### Genetic Algorithm
 A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and final quality of the results.
 
@@ -23,13 +30,23 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
 
  
 <div align="center">
-    <img src="results/images/PSO_mona_lisa.jpg" height="230"/>
-    <img src="results/images/PSO_dog.jpg" height="230"/>
-    <img src="results/images/PSO_liberty_statue.jpg" height="230"/>
+    <img src="results/images/PSO_mona_lisa.jpg" height="170"/>
+    <img src="results/images/PSO_dog.jpg" height="170"/>
+    <img src="results/images/PSO_liberty_statue.jpg" height="170"/>
+    <img src="results/images/PSO_starry_night.jpg" height="170"/>
+</div>
+
+### Video Vectorization
+Both algorithms can be also applied to videos:
+
+
+<div align="center">
+    <img src="samples/dancer.gif" height="150"/>
+    <img src="results/images/GA_dancer.gif" height="150"/>
+    <img src="results/images/PSO_dancer.gif" height="150"/>
 </div>
 
 
-Both algorithms can be also applied to videos:
 <div align="center">
     <img src="samples/parachute.gif" height="150"/>
     <img src="samples/run.gif" height="150"/>

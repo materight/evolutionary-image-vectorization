@@ -19,7 +19,7 @@ cv.namedWindow('Result')
 SAMPLE = 'mona_lisa.jpg'
 ALGORITHM = GA  # GA or PSO
 INTERPOLATION_SIZE = 5  # Number of interpolated frame to save for PSO results. Set to 1 to disable interpolation
-VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 2000, 500  # Number of generations to run for the first and for the other frames, respectively
+VIDEO_INIT_GEN, VIDEO_FRAME_GEN = 3000, 500  # Number of generations to run for the first and for the other frames, respectively
 
 if len(sys.argv) > 1:
     SAMPLE = sys.argv[1]
@@ -62,18 +62,18 @@ ga = GA(
 # Particle swarm optimization
 pso = PSO(
     img,
-    swarm_size=1000,
-    line_length=15,
+    swarm_size=500,
+    line_length=20,
     velocity_update_rule=velocity_update.Standard(),  # velocity_update.Standard(), velocity_update.FullyInformed(), velocity_update.ComprehensiveLearning()
     neighborhood_topology=topology.StarTopology(),  # topology.DistanceTopology(), topology.RingTopology(), topology.StarTopology()
     neighborhood_size=3,
-    coeffs=(0.1, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7)
+    coeffs=(0.2, 1.5, 1.5),  # Inertia (0.7 - 0.8), cognitive coeff/social coeff (1.5 - 1.7)
     min_distance=2,
     max_velocity=50
 )
 
 fbest, favg, fworst = [], [], []
-diversities, dist = [], None
+diversities, dist, prev_npswarm = [], None, None
 try:  # Press ctrl+c to exit loop
     print(f'\nRunning {ALGORITHM.__name__} algorithm over "{SAMPLE}".\nPress ctrl+c to terminate the execution.\n')
     while True:
@@ -116,13 +116,20 @@ try:  # Press ctrl+c to exit loop
 
         # Save result in video
         if (ALGORITHM is GA and (
-            (isvideo and gen % VIDEO_FRAME_GEN == 0) or
-            (not isvideo and gen % 10 == 0))) \
-                or (ALGORITHM is PSO):
+                (isvideo and gen % VIDEO_FRAME_GEN == 0) or
+                (not isvideo and gen % 10 == 0)) 
+            ) or (ALGORITHM is PSO and ( 
+                (isvideo and gen % VIDEO_FRAME_GEN == 0) or
+                (not isvideo))
+            ):
             if ALGORITHM is GA:
                 frames = [best_img.copy()]
             elif ALGORITHM is PSO:
-                frames = pso.draw_interpolated(INTERPOLATION_SIZE)  # Interpolate frames for better visualization
+                if prev_npswarm is not None and not isvideo:
+                    frames = pso.draw_interpolated(prev_npswarm, INTERPOLATION_SIZE)  # Interpolate frames for better visualization
+                else:
+                    frames = [best_img.copy()]
+                prev_npswarm = pso.npswarm
             for frame in frames:
                 # frame = cv.putText(frame, f'{gen}', (2, 16), cv.FONT_HERSHEY_PLAIN, 1.4, (0, 0, 255), 2) # Print generation number
                 out.write(frame)

@@ -6,7 +6,7 @@ from ..operators import selection, replacement
 
 class GA:
     
-    def __init__(self, target, pop_size, n_poly, n_vertex, selection_strategy, replacement_strategy, crossover_type, self_adaptive, mutation_rates, mutation_step_sizes, internal_resolution=75):
+    def __init__(self, target, pop_size, n_poly, n_vertex, selection_strategy, replacement_strategy, crossover_type, self_adaptive, mutation_rates, mutation_step_sizes, internal_resolution=120):
         self.generation = 0
         self.problem = Problem(Problem.RGB, target, internal_resolution)
         self.pop_size = pop_size
