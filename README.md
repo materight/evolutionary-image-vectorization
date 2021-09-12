@@ -1,6 +1,6 @@
 # Evolutionary Image Vectorization
 
-An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization.
+An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization. Check the [report](./report.pdf) for more implementation details.
 
 <div align="center">
     <img src="samples/mona_lisa.jpg" height="250"/>
