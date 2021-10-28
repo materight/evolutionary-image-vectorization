@@ -6,12 +6,13 @@ from ..operators import selection, replacement
 
 class GA:
     
-    def __init__(self, target, pop_size, n_poly, n_vertex, selection_strategy, replacement_strategy, crossover_type, self_adaptive, mutation_rates, mutation_step_sizes, internal_resolution=120):
+    def __init__(self, target, pop_size, n_poly, n_vertex, random_init_color, selection_strategy, replacement_strategy, crossover_type, self_adaptive, mutation_rates, mutation_step_sizes, internal_resolution=120):
         self.generation = 0
         self.problem = Problem(Problem.RGB, target, internal_resolution)
         self.pop_size = pop_size
         self.n_poly = n_poly
         self.n_vertex = n_vertex
+        self.random_init_color = random_init_color
         self.selection_strategy = selection_strategy
         self.replacement_strategy = replacement_strategy
         self.crossover_type = crossover_type
@@ -21,7 +22,7 @@ class GA:
         self.next_idx = 0
         self.population = []
         for i in range(pop_size):
-            self.population.append(Individual.random(self.problem, self.next_idx, self.n_poly, self.n_vertex, self.self_adaptive))
+            self.population.append(Individual.random(self.problem, self.next_idx, self.n_poly, self.n_vertex, self.random_init_color, self.self_adaptive))
             self.next_idx += self.n_poly
         self.sort_population()
 

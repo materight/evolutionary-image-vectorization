@@ -18,9 +18,9 @@ class Individual:
         self._fitness = None
 
 
-    def random(problem, next_idx, n_poly, n_vertex, self_adaptive):
+    def random(problem, next_idx, n_poly, n_vertex, radom_color, self_adaptive):
         # Init random individual
-        polygons = [Polygon.random(next_idx + idx, problem, n_vertex, self_adaptive) for idx in range(n_poly)]
+        polygons = [Polygon.random(next_idx + idx, problem, n_vertex, radom_color, self_adaptive) for idx in range(n_poly)]
         return Individual(problem, polygons)
 
 

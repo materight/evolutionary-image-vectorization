@@ -2,6 +2,7 @@ import numpy as np
 from numpy import random
 from numpy.random import randint, rand
 from numba import njit
+import cv2 as cv
 
 from ..utils import clip, normal, uniform
 
@@ -18,7 +19,7 @@ class Polygon:
         self.alpha = alpha
         self.strategy_params = strategy_params
 
-    def random(idx, problem, n_vertex, self_adaptive):
+    def random(idx, problem, n_vertex, random_color, self_adaptive):
         # Initialize the polygon's points randomly
         img_size = np.array(problem.target.shape[:2][::-1])
         pos = rand(2) * img_size  # Generale position of the polygon, to which start creating points
@@ -26,7 +27,13 @@ class Polygon:
         radius = (img_size * PTS_RADIUS).astype(np.int)
         pts = rand(n_vertex, 2)*2*radius + (pos - radius) # Create
         pts = np.clip(pts, [0, 0], img_size)  # Clip points outside limits
-        color = rand(3) * 256  # RGB
+        if random_color:
+            color = rand(3) * 256  # RGB
+        else:
+            mask = np.zeros(problem.target.shape[:2], dtype=np.uint8)
+            mask = cv.fillPoly(mask, pts=[pts.astype(np.int)], color=255)
+            color = problem.target[mask==255]
+            color = np.flip(color.mean(axis=0)) if color.shape[0] > 0 else rand(3) * 256
         alpha = rand() * (ALPHA_MAX - ALPHA_MIN) + ALPHA_MIN  # Alpha channel
         # Init ES parameters
         strategy_params = rand(pts.size+color.size+1)*.01 if self_adaptive else None
