@@ -1,6 +1,6 @@
 # Evolutionary Image Vectorization
 
-An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization. Check the [report](./report.pdf) for more implementation details.
+An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization. Check the [report](./report.pdf) for more details on the implementation.
 
 <div align="center">
     <img src="samples/mona_lisa.jpg" height="250"/>
@@ -10,7 +10,7 @@ An evolutionary approach to image vectorization, based on Genetic Algorithms and
 
 
 ### Genetic Algorithm
-A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and final quality of the results.
+A set of colored and transparent polygons are evolved using a genetic algorithm to reproduce the target image as close as possible. Different improvements are implemented to increase converge speed and final result quality.
 
 <div align="center">
     <img src="samples/dog.jpg" height="160"/>
@@ -37,7 +37,7 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
 </div>
 
 ### Video Vectorization
-Both algorithms can be also applied to videos:
+Both algorithms can be also used to vectorize videos:
 
 
 <div align="center">
@@ -65,8 +65,8 @@ Both algorithms can be also applied to videos:
 ## Get started
 - Clone the repository
 - Install the required dependencies by running `pip install opencv numpy pandas matplotlib numba`
-- Run `main.py target algorithm`:
-    - `target`: the target image file name. Check the `samples` folder for a list of available images. Supports also `.gifs` and `.mp4`.
+- Run `main.py [target] [algorithm]`:
+    - `target`: the target image file name. Check the `samples` folder for a list of available images. Supports also `.gifs` and `.mp4` files.
     - `algorithm`: the algorithm to use, can be either `GA` or `PSO`.
 
 In `main.py` it is possible to change the hyper-parameters used by each algorithm.
