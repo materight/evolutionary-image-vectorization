@@ -63,8 +63,8 @@ Both algorithms can be also used to vectorize videos:
 </div>
 
 ## Get started
-- Clone the repository
-- Install the required dependencies by running `pip install opencv numpy pandas matplotlib numba`
+- Clone the repository.
+- Install the required dependencies by running `pip install -r requirements.txt`.
 - Run `main.py [target] [algorithm]`:
     - `target`: the target image file name. Check the `samples` folder for a list of available images. Supports also `.gifs` and `.mp4` files.
     - `algorithm`: the algorithm to use, can be either `GA` or `PSO`.

@@ -1,0 +1,8 @@
+matplotlib==3.2.2
+numba==0.53.0
+numpy==1.20.1
+opencv_python==4.5.4.60
+pandas==1.2.3
+Pillow==8.4.0
+scikit_learn==1.0.1
+tqdm==4.50.2
