@@ -1,6 +1,6 @@
 # Evolutionary Image Vectorization
 
-An evolutionary approach to image vectorization, based on Genetic Algorithms and Particle Swarm Optimization. Check the [report](./report.pdf) for more details on the implementation.
+An evolutionary approach to image vectorization, based on Genetic Algorithms (GA) and Particle Swarm Optimization (PSO). Check the [report](./report.pdf) for more details on the implementation.
 
 <div align="center">
     <img src="samples/mona_lisa.jpg" height="250"/>
@@ -36,7 +36,7 @@ A set of segments are evolved to reproduce the most relevant contours of the tar
     <img src="results/images/PSO_starry_night.jpg" height="160"/>
 </div>
 
-### Video Vectorization
+### Video vectorization
 Both algorithms can be also used to vectorize videos:
 
 
